@@ -204,9 +204,16 @@
             border-radius: 0 !important; box-shadow: none !important;
         }
         .live-center-img {
-            position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
-            width: 150px; height: 170px; z-index: 18;
-            background-size: contain; background-repeat: no-repeat; background-position: center bottom;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            z-index: 18;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
             pointer-events: none;
         }
 
@@ -389,7 +396,6 @@
         
         <div class="live-arena" id="live-field">
             <div class="live-center-img" id="live-center-img"></div>
-            <div class="npc-star" id="live-npc" onclick="triggerNpcDance()"></div>
         </div>
 
         <div class="glass-card">
