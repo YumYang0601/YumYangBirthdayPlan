@@ -262,7 +262,13 @@
 </head>
 <body>
 
-<audio id="rhythm-bgm" src="audio/rhythm-bgm.mp3" preload="auto" loop></audio>
+<audio
+    id="rhythm-bgm"
+    src="audio/rhythm-bgm.mp3"
+    preload="auto"
+    loop
+    playsinline
+></audio>
 
 <div class="page-viewport">
 
@@ -301,7 +307,12 @@
                 </div>
             </div>
 
-            <button class="action-submit-btn" id="start-btn" style="opacity:0.4; pointer-events:none;" onclick="fadeTo('scr-game')">Challenge Start ➔</button>
+            <button
+            class="action-submit-btn"
+            id="start-btn"
+            onclick="startGame()">
+            Challenge Start ➔
+            </button>
         </div>
     </div>
 
@@ -470,7 +481,6 @@
         document.getElementById(id).classList.add('active');
 
         if(id === 'scr-game') {
-            playRhythmBgm();
             runAudioAndBeatmapEngine();
         } else {
             stopRhythmBgm();
@@ -490,7 +500,21 @@
             });
         }
     }
+function startGame() {
 
+    const bgm = document.getElementById('rhythm-bgm');
+
+    if(bgm){
+        bgm.src = assetConfig.bgm;
+        bgm.volume = 0.75;
+
+        bgm.play().catch(err=>{
+            console.log(err);
+        });
+    }
+
+    fadeTo('scr-game');
+}
     function stopRhythmBgm() {
         const bgm = document.getElementById('rhythm-bgm');
         if(!bgm) return;
