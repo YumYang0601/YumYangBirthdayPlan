@@ -271,6 +271,13 @@
        style="display:none;">
 </audio>
 
+    <audio id="end-bgm"
+       preload="auto"
+       loop
+       playsinline
+       style="display:none;">
+     </audio>
+    
 <div class="page-viewport">
 
     <div class="game-screen active" id="scr-setup">
@@ -436,6 +443,8 @@
     const assetConfig = {
         // 卡点关卡 BGM：把你的音乐放进 audio 文件夹，命名为 rhythm-bgm.mp3
         bgm: "audio/rhythm-bgm.mp3",
+        
+        endBgm: "audio/end-bgm.mp3",
 
         // 1. 初始形象选择区图片：后期把图片放进 image 文件夹即可
         sheep: {
@@ -548,6 +557,32 @@
         bgm.currentTime = 0;
     }
 
+    function playEndBgm() {
+
+    const bgm = document.getElementById('end-bgm');
+
+    if(!bgm) return;
+
+    bgm.src = assetConfig.endBgm;
+
+    bgm.volume = 0.75;
+
+    bgm.play().catch(err=>{
+        console.log(err);
+    });
+}
+
+function stopEndBgm() {
+
+    const bgm = document.getElementById('end-bgm');
+
+    if(!bgm) return;
+
+    bgm.pause();
+
+    bgm.currentTime = 0;
+}
+    
     function chooseRole(type) {
         myRole = type;
         document.querySelectorAll('#scr-setup .grid-card').forEach(c => c.classList.remove('selected'));
@@ -807,12 +842,21 @@
     function evalBake() { if(bOk && cOk) document.getElementById('finish-bake-btn').style.display = 'block'; }
 
     function goToLive() {
-        document.getElementById('reward-player').pause();
-        const liveImg = document.getElementById('live-center-img');
-        liveImg.style.backgroundImage = `url('${assetConfig.finalScene.centerImage}')`;
-        fadeTo('scr-live');
-    }
 
+    document.getElementById('reward-player').pause();
+
+    stopRhythmBgm();
+
+    playEndBgm();
+
+    const liveImg = document.getElementById('live-center-img');
+
+    liveImg.style.backgroundImage =
+        `url('${assetConfig.finalScene.centerImage}')`;
+
+    fadeTo('scr-live');
+}
+    
     function triggerNpcDance() {
         const npc = document.getElementById('live-npc');
         document.getElementById('dialogue').innerText = `🎵 杨博文：“极限卡点太帅了！感谢你为我搭建的专属生日舞台！”`;
@@ -831,20 +875,27 @@
     }
 
     function sendDanmaku() {
-        const ipt = document.getElementById('danmaku-input');
-        const txt = ipt.value.trim(); if(!txt) return;
+    const ipt = document.getElementById('danmaku-input');
+    const txt = ipt.value.trim();
+    if(!txt) return;
 
-        const f = document.getElementById('live-field');
-        const dam = document.createElement('div');
-        dam.className = 'danmaku-lane'; dam.innerText = txt;
+    const f = document.getElementById('live-field');
 
-        const cols = ['#ffffff', '#ffeb3b', '#ff7675', '#fd79a8', '#55efc4', '#a29bfe'];
-        dam.style.color = cols[Math.floor(Math.random() * cols.length)];
-        dam.style.top = `${Math.random() * 110 + 15}px`;
+    const dam = document.createElement('div');
+    dam.className = 'danmaku-lane';
+    dam.innerText = txt;
 
-        f.appendChild(dam); ipt.value = '';
-        setTimeout(() => dam.remove(), 6000);
-    }
+    const cols = ['#ffffff', '#ffeb3b', '#ff7675', '#fd79a8', '#55efc4', '#a29bfe'];
+    dam.style.color = cols[Math.floor(Math.random() * cols.length)];
+    dam.style.top = `${Math.random() * 230 + 20}px`;
+    dam.style.left = '100%';
+    dam.style.zIndex = '50';
+
+    f.appendChild(dam);
+    ipt.value = '';
+
+    setTimeout(() => dam.remove(), 7000);
+}
 
 
     // ✅ 双保险：不用只依赖 HTML onclick，按钮点击也强制绑定一次
