@@ -434,68 +434,58 @@
 
 <script>
     const assetConfig = {
-        // 卡点关卡 BGM：把你的音乐放进 audio 文件夹，命名为 rhythm-bgm.mp3
-        bgm: "audio/rhythm-bgm.mp3",
+        // 卡点关卡 BGM
+        bgm: "audio/rhythm-bgm.mp3", [cite: 127]
 
-        // 1. 初始形象选择区图片：后期把图片放进 image 文件夹即可
+        // 1. 初始形象选择区图片
         sheep: {
-            idle: "image/sheep.png",
-            left: "image/sheep-left.png",
-            up: "image/sheep-up.png",
-            right: "image/sheep-right.png",
-            video: "video/sheep-pass.mp4"
+            idle: "image/sheep.png", [cite: 127]
+            left: "image/sheep-left.png", [cite: 127]
+            up: "image/sheep-up.png", [cite: 127]
+            right: "image/sheep-right.png", [cite: 128]
+            video: "video/sheep-pass.mp4" [cite: 128]
         },
         bunny: {
-            idle: "image/rabbit.png",
-            left: "image/rabbit-left.png",
-            up: "image/rabbit-up.png",
-            right: "image/rabbit-right.png",
-            video: "video/rabbit-pass.mp4"
+            idle: "image/rabbit.png", [cite: 128]
+            left: "image/rabbit-left.png", [cite: 128]
+            up: "image/rabbit-up.png", [cite: 128]
+            right: "image/rabbit-right.png", [cite: 129]
+            video: "video/rabbit-pass.mp4" [cite: 129]
         },
-        // 4. 蛋糕底胚和奶油由代码自动生成，不需要上传图片
         cakeBaseColors: {
-            original: "#f6c77a",
-            strawberry: "#ffb8c8",
-            blueberry: "#a6d8ff"
+            original: "#f6c77a", [cite: 129]
+            strawberry: "#ffb8c8", [cite: 129]
+            blueberry: "#a6d8ff" [cite: 129]
         },
         creamColors: {
-            peach: "#ffd6e7",
-            red: "#ff8fa3"
+            peach: "#ffd6e7", [cite: 129]
+            red: "#ff8fa3" [cite: 130]
         },
-        // 只有装饰和蜡烛需要你后期上传透明底图片
         stickers: {
-            candle: "image/cake-candle.png",
-            strawberry: "image/decor-strawberry.png",
-            sheep_sticker: "image/decor-sheep.png",
-            bunny_sticker: "image/decor-rabbit.png",
-            heart: "image/decor-heart.png",
-            star: "image/decor-star.png"
+            candle: "image/cake-candle.png", [cite: 130]
+            strawberry: "image/decor-strawberry.png", [cite: 130]
+            sheep_sticker: "image/decor-sheep.png", [cite: 130]
+            bunny_sticker: "image/decor-rabbit.png", [cite: 130]
+            heart: "image/decor-heart.png", [cite: 131]
+            star: "image/decor-star.png" [cite: 131]
         },
-        // 6. 结局中间弹幕舞台图片
         finalScene: {
-            centerImage: "image/live-center.png"
+            centerImage: "image/live-center.png" [cite: 131]
         }
     };
 
-    let myRole = ''; let selectedSongId = null;
-    let combo = 0; 
-    let totalNotesHit = 0;      // 🌟 核心增量：记录玩家真正点击成功的次数
-    let targetGoalCount = 10;   // 🌟 核心设定：基础版10次，Hard版20次
-    let liveNotes = []; let bOk = false, cOk = false;
-    let noteSpawnerTimer = null; // 动态音符发生器定时器
-    const praiseWords = ["太棒了", "非常好", "卡点王赞赞", "精准踩点", "节奏天才", "好会卡", "高光瞬间", "稳稳命中", "全场尖叫", "漂亮！"];
+    let myRole = ''; let selectedSongId = null; [cite: 132]
+    let combo = 0; [cite: 132]
+    let totalNotesHit = 0; [cite: 132]
+    let targetGoalCount = 10;   [cite: 133]
+    let liveNotes = []; [cite: 133]
+    let bOk = false, cOk = false; [cite: 134]
+    let noteSpawnerTimer = null; [cite: 134]
+    const praiseWords = ["太棒了", "非常好", "卡点王赞赞", "精准踩点", "节奏天才", "好会卡", "高光瞬间", "稳稳命中", "全场尖叫", "漂亮！"]; [cite: 135]
 
-    function fadeTo(id) {
-        document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-
-        if(id === 'scr-game') {
-            runAudioAndBeatmapEngine();
-        } else {
-            stopRhythmBgm();
-        }
-    }
-
+    // ==================== 🛠️ 手机端音频核心生命周期管理 ====================
+    
+    // 全局唯一的音频对象源控制，页面加载完只赋值一次，绝不重复覆写 src
     window.addEventListener('DOMContentLoaded', () => {
         const bgm = document.getElementById('rhythm-bgm');
         if (bgm) {
@@ -503,13 +493,13 @@
             bgm.load(); 
         }
         
+        // 兼容微信内置浏览器的底层自动解锁
         document.addEventListener("WeixinJSBridgeReady", function () {
             if (bgm) {
                 bgm.play().then(() => {
-                    // 如果在微信里成功自动触发了，先暂停，等玩家点“开始游戏”再播
                     bgm.pause();
                     bgm.currentTime = 0;
-                }).catch(e => console.log("微信自动解锁失败"));
+                }).catch(e => console.log("微信环境静默自动解锁失败"));
             }
         }, false);
     });
@@ -519,335 +509,291 @@
         if(!bgm) return;
         bgm.volume = 0.75;
         bgm.play().catch((err) => {
-            console.log('BGM 播放失败:', err);
+            console.log('手机安全策略拦截了音频自动播放，等待用户点击大按钮触发');
         });
     }
 
     function startGame() {
-        playRhythmBgm(); // 点击开始游戏时直接调用播放
+        // 玩家明确点击“Challenge Start”，在此合法时机激活音频
+        playRhythmBgm();
         fadeTo('scr-game');
     }
     
     function forcePlayBgm() {
         const bgm = document.getElementById('rhythm-bgm');
         if(!bgm) return;
-
         bgm.volume = 0.8;
+        // 移除重置逻辑，直接恢复播放状态
         bgm.play().then(() => {
-            console.log("音频强制播放成功");
+            console.log("手机端手动强制激活音乐成功");
         }).catch(err => {
             console.log(err);
-            alert("播放失败！请确认手机没有开启【侧边静音开关】且【媒体音量已调大】，然后重试。");
+            alert("播放失败！请确认您的手机【未开启侧边静音开关】且【媒体音量已调大】，然后再试一次。");
         });
     }
 
     function stopRhythmBgm() {
         const bgm = document.getElementById('rhythm-bgm');
         if(!bgm) return;
-        bgm.pause();
-        bgm.currentTime = 0;
+        try {
+            bgm.pause();
+            bgm.currentTime = 0;
+        } catch(e) { console.log(e); }
+    }
+
+    // ==================== 游戏常规核心逻辑 ====================
+
+    function fadeTo(id) {
+        document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active')); [cite: 136]
+        document.getElementById(id).classList.add('active'); [cite: 136]
+        if(id === 'scr-game') { [cite: 137]
+            runAudioAndBeatmapEngine(); [cite: 137]
+        }
     }
 
     function chooseRole(type) {
-        myRole = type;
-        document.querySelectorAll('#scr-setup .grid-card').forEach(c => c.classList.remove('selected'));
-        document.getElementById(`role-${type}`).classList.add('selected');
-        checkSetupStatus();
+        myRole = type; [cite: 149]
+        document.querySelectorAll('#scr-setup .grid-card').forEach(c => c.classList.remove('selected')); [cite: 150]
+        document.getElementById(`role-${type}`).classList.add('selected'); [cite: 150]
+        checkSetupStatus(); [cite: 150]
     }
 
     function chooseSong(id) {
-        selectedSongId = id;
-        targetGoalCount = (id === 0) ? 10 : 20; // 🌟 核心点：判断目标值
-        document.querySelectorAll('.song-option').forEach(o => o.classList.remove('selected'));
-        document.getElementById(`song-${id}`).classList.add('selected');
-        checkSetupStatus();
+        selectedSongId = id; [cite: 150]
+        targetGoalCount = (id === 0) ? 10 : 20; [cite: 151]
+        document.querySelectorAll('.song-option').forEach(o => o.classList.remove('selected')); [cite: 151]
+        document.getElementById(`song-${id}`).classList.add('selected'); [cite: 152]
+        checkSetupStatus(); [cite: 152]
     }
 
     function checkSetupStatus() {
-        if(myRole && selectedSongId !== null) {
-            const btn = document.getElementById('start-btn');
-            btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
-            document.getElementById('stage-player').style.backgroundImage = `url('${assetConfig[myRole].idle}')`;
-            document.getElementById('live-npc').style.backgroundImage = `url('${assetConfig[myRole].idle}')`;
+        if(myRole && selectedSongId !== null) { [cite: 152]
+            const btn = document.getElementById('start-btn'); [cite: 152]
+            btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; [cite: 153]
+            document.getElementById('stage-player').style.backgroundImage = `url('${assetConfig[myRole].idle}')`; [cite: 153]
         }
     }
 
-    // ================= 核心重构：无限生成机制 + 命中计数拦截通关 =================
     function runAudioAndBeatmapEngine() {
-        const stage = document.getElementById('game-stage');
-        
-        // 初始化重置所有状态
-        combo = 0; totalNotesHit = 0; liveNotes = [];
-        if(noteSpawnerTimer) clearInterval(noteSpawnerTimer);
-        
-        document.getElementById('ui-progress').innerText = `通关进度: 0 / ${targetGoalCount}`;
-        document.getElementById('ui-combo').style.display = 'none';
-        document.getElementById('ui-feedback').innerText = '';
+        const stage = document.getElementById('game-stage'); [cite: 154]
+        combo = 0; totalNotesHit = 0; liveNotes = []; [cite: 155]
+        if(noteSpawnerTimer) clearInterval(noteSpawnerTimer); [cite: 155]
+        document.getElementById('ui-progress').innerText = `通关进度: 0 / ${targetGoalCount}`; [cite: 156]
+        document.getElementById('ui-combo').style.display = 'none'; [cite: 156]
+        document.getElementById('ui-feedback').innerText = ''; [cite: 156]
 
-        let loopIdx = 0;
-
-        // 🌟 采用动态循环喷薄音符机制：只要没点击凑满10次/20次，音符就会高频交替掉落
-        const spawnInterval = selectedSongId === 0 ? 1200 : 700; // Hard版掉落频率更快
+        const spawnInterval = selectedSongId === 0 ? 1200 : 700; [cite: 157]
         
         noteSpawnerTimer = setInterval(() => {
-            if(!document.getElementById('scr-game').classList.contains('active')) {
-                clearInterval(noteSpawnerTimer);
-                return;
+            if(!document.getElementById('scr-game').classList.contains('active')) { [cite: 158]
+                clearInterval(noteSpawnerTimer); [cite: 158]
+                return; [cite: 158]
             }
             
-            // 左、上、右三条轨道随机出现，避免连续太死板
-            let trackIndex = Math.floor(Math.random() * 3);
-            loopIdx++;
+            let trackIndex = Math.floor(Math.random() * 3); [cite: 159]
+            const note = document.createElement('div'); [cite: 159]
+            note.className = 'rhythm-note'; [cite: 159]
+            const arrows = ['←', '↑', '→']; [cite: 159]
+            note.innerText = arrows[trackIndex]; [cite: 159]
+            note.style.left = `calc(${trackIndex * 33.33}% + (33.33% - 46px)/2)`; [cite: 160]
+            note.style.top = '0px'; [cite: 160]
 
-            const note = document.createElement('div');
-            note.className = 'rhythm-note';
-            const arrows = ['←', '↑', '→'];
-            note.innerText = arrows[trackIndex];
-            note.style.left = `calc(${trackIndex * 33.33}% + (33.33% - 46px)/2)`;
-            note.style.top = '0px';
-
-            stage.appendChild(note);
-            liveNotes.push({ element: note, track: trackIndex, top: 0 });
-
+            stage.appendChild(note); [cite: 160]
+            liveNotes.push({ element: note, track: trackIndex, top: 0 }); [cite: 160]
         }, spawnInterval);
 
-        // 画面帧渲染环
         function renderAnimationLoop() {
-            if(!document.getElementById('scr-game').classList.contains('active')) return;
-            for(let i = liveNotes.length - 1; i >= 0; i--) {
-                let n = liveNotes[i];
-                n.top += (selectedSongId === 0 ? 4.5 : 6.0); // Hard版不仅次数多，下落速度还更快！
-                n.element.style.top = `${n.top}px`;
-                
-                // 漏点惩罚
-                if(n.top > 380) {
-                    n.element.remove();
-                    liveNotes.splice(i, 1);
-                    combo = 0;
-                    document.getElementById('ui-combo').style.display = 'none';
+            if(!document.getElementById('scr-game').classList.contains('active')) return; [cite: 161]
+            for(let i = liveNotes.length - 1; i >= 0; i--) { [cite: 162]
+                let n = liveNotes[i]; [cite: 162]
+                n.top += (selectedSongId === 0 ? 4.5 : 6.0); [cite: 163]
+                n.element.style.top = `${n.top}px`; [cite: 163]
+                if(n.top > 380) { [cite: 164]
+                    n.element.remove(); [cite: 164]
+                    liveNotes.splice(i, 1); [cite: 165]
+                    combo = 0; [cite: 165]
+                    document.getElementById('ui-combo').style.display = 'none'; [cite: 165]
                 }
             }
-            requestAnimationFrame(renderAnimationLoop);
+            requestAnimationFrame(renderAnimationLoop); [cite: 165]
         }
-        requestAnimationFrame(renderAnimationLoop);
-
-        // 绑定键盘
-        window.addEventListener('keydown', (e) => {
-            if(e.key === 'ArrowLeft') hitTrack(0);
-            if(e.key === 'ArrowUp') hitTrack(1);
-            if(e.key === 'ArrowRight') hitTrack(2);
-        });
-    }
-
-
-    function showRandomBeatWord() {
-        const stage = document.getElementById('game-stage');
-        const pop = document.createElement('div');
-        pop.className = 'beat-word-pop';
-        pop.innerText = praiseWords[Math.floor(Math.random() * praiseWords.length)];
-
-        // 随机出现在左上 / 中上 / 右上区域
-        const xList = [18, 38, 60];
-        pop.style.left = `${xList[Math.floor(Math.random() * xList.length)]}%`;
-        pop.style.top = `${Math.random() * 60 + 35}px`;
-        stage.appendChild(pop);
-        setTimeout(() => pop.remove(), 760);
-    }
-
-    function playSynthTone(ctx, freq, duration) {
-        try {
-            let osc = ctx.createOscillator(); let gain = ctx.createGain();
-            osc.type = 'sine'; osc.frequency.value = freq;
-            gain.gain.setValueAtTime(0.1, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-            osc.connect(gain); gain.connect(ctx.destination);
-            osc.start(); osc.stop(ctx.currentTime + duration);
-        } catch(e){}
+        requestAnimationFrame(renderAnimationLoop); [cite: 166]
     }
 
     function hitTrack(trackIndex) {
-        const ring = document.getElementById(`ring-${trackIndex}`);
-        ring.classList.add('hitted'); setTimeout(() => ring.classList.remove('hitted'), 100);
+        const ring = document.getElementById(`ring-${trackIndex}`); [cite: 173]
+        ring.classList.add('hitted'); setTimeout(() => ring.classList.remove('hitted'), 100); [cite: 174]
 
-        let isHit = false;
-        for(let i = 0; i < liveNotes.length; i++) {
-            let n = liveNotes[i];
-            if(n.track === trackIndex && n.top >= 260 && n.top <= 365) {
-                isHit = true; n.element.remove(); liveNotes.splice(i, 1); break;
+        let isHit = false; [cite: 174]
+        for(let i = 0; i < liveNotes.length; i++) { [cite: 174]
+            let n = liveNotes[i]; [cite: 174]
+            if(n.track === trackIndex && n.top >= 260 && n.top <= 365) { [cite: 175]
+                isHit = true; [cite: 175]
+                n.element.remove(); liveNotes.splice(i, 1); break; [cite: 176]
             }
         }
 
-        const dancer = document.getElementById('stage-player');
-        const feedback = document.getElementById('ui-feedback');
-        const flash = document.getElementById('bg-flash');
+        const dancer = document.getElementById('stage-player'); [cite: 176]
+        const feedback = document.getElementById('ui-feedback'); [cite: 177]
+        const flash = document.getElementById('bg-flash'); [cite: 177]
 
         if(isHit) {
-            combo++; 
-            totalNotesHit++; // 🌟 核心：只有点击成功才加分计数！
+            combo++; [cite: 177]
+            totalNotesHit++; [cite: 178]
             
-            // 更新看板
-            document.getElementById('ui-progress').innerText = `通关进度: ${totalNotesHit} / ${targetGoalCount}`;
-
-            // 动作精准触发
-            let actionImg = assetConfig[myRole].idle;
-            if(trackIndex === 0) actionImg = assetConfig[myRole].left;
-            if(trackIndex === 1) actionImg = assetConfig[myRole].up;
-            if(trackIndex === 2) actionImg = assetConfig[myRole].right;
-            
-            dancer.style.backgroundImage = `url('${actionImg}')`;
-            dancer.style.transform = 'translateX(-50%) scale(1.15)';
+            document.getElementById('ui-progress').innerText = `通关进度: ${totalNotesHit} / ${targetGoalCount}`; [cite: 178]
+            let actionImg = assetConfig[myRole].idle; [cite: 179]
+            if(trackIndex === 0) actionImg = assetConfig[myRole].left; [cite: 180]
+            if(trackIndex === 1) actionImg = assetConfig[myRole].up; [cite: 180]
+            if(trackIndex === 2) actionImg = assetConfig[myRole].right; [cite: 180]
+            dancer.style.backgroundImage = `url('${actionImg}')`; [cite: 181]
+            dancer.style.transform = 'translateX(-50%) scale(1.15)'; [cite: 181]
             
             setTimeout(() => {
-                dancer.style.backgroundImage = `url('${assetConfig[myRole].idle}')`;
-                dancer.style.transform = 'translateX(-50%) scale(1)';
+                dancer.style.backgroundImage = `url('${assetConfig[myRole].idle}')`; [cite: 181]
+                dancer.style.transform = 'translateX(-50%) scale(1)'; [cite: 181]
             }, 200);
 
-            feedback.innerText = praiseWords[Math.floor(Math.random() * praiseWords.length)];
-            feedback.style.color = '#55efc4';
-            showRandomBeatWord();
+            feedback.innerText = praiseWords[Math.floor(Math.random() * praiseWords.length)]; [cite: 182]
+            feedback.style.color = '#55efc4'; [cite: 182]
+            showRandomBeatWord(); [cite: 182]
 
-            flash.style.background = 'rgba(255, 118, 118, 0.15)';
-            setTimeout(() => flash.style.background = 'transparent', 80);
+            flash.style.background = 'rgba(255, 118, 118, 0.15)'; [cite: 182]
+            setTimeout(() => flash.style.background = 'transparent', 80); [cite: 183]
 
-            const ui = document.getElementById('ui-combo');
-            ui.innerText = `${combo} COMBO`; ui.style.display = 'block';
+            const ui = document.getElementById('ui-combo'); [cite: 183]
+            ui.innerText = `${combo} COMBO`; ui.style.display = 'block'; [cite: 183]
 
-            // 🌟 核心拦截检查：一旦点满了 10次 或 20次，瞬间停止生成并切入视频！
+            // 🌟【时序修复核心】：一旦判定通关，必须在当前点击帧内立即停止 BGM 并挂载视频，绝不走 setTimeout
             if(totalNotesHit >= targetGoalCount) {
-                clearInterval(noteSpawnerTimer); // 关掉生成器
-                setTimeout(() => {
-                    const videoPlayer = document.getElementById('reward-player');
-                    videoPlayer.src = assetConfig[myRole].video;
-                    videoPlayer.load();
-                    stopRhythmBgm();
-                    fadeTo('scr-video-reward');
-                }, 500);
+                clearInterval(noteSpawnerTimer); [cite: 184]
+                stopRhythmBgm(); // 立即掐断音频流，防止死锁 
+                
+                const videoPlayer = document.getElementById('reward-player'); [cite: 185]
+                videoPlayer.src = assetConfig[myRole].video; [cite: 185]
+                videoPlayer.load(); [cite: 185]
+                
+                fadeTo('scr-video-reward'); [cite: 186]
             }
         } else {
-            feedback.innerText = "MISS 💨"; feedback.style.color = '#ff7675';
-            combo = 0; document.getElementById('ui-combo').style.display = 'none';
+            feedback.innerText = "MISS 💨"; [cite: 187]
+            feedback.style.color = '#ff7675'; [cite: 188]
+            combo = 0; document.getElementById('ui-combo').style.display = 'none'; [cite: 188]
         }
     }
 
-    // 做蛋糕及拖拽模块：底胚和奶油自动生成；装饰/蜡烛用你上传的透明底图片
+    function showRandomBeatWord() {
+        const stage = document.getElementById('game-stage'); [cite: 167]
+        const pop = document.createElement('div'); [cite: 168]
+        pop.className = 'beat-word-pop'; [cite: 168]
+        pop.innerText = praiseWords[Math.floor(Math.random() * praiseWords.length)]; [cite: 168]
+        const xList = [18, 38, 60]; [cite: 169]
+        pop.style.left = `${xList[Math.floor(Math.random() * xList.length)]}%`; [cite: 170]
+        pop.style.top = `${Math.random() * 60 + 35}px`; [cite: 170]
+        stage.appendChild(pop); [cite: 170]
+        setTimeout(() => pop.remove(), 760); [cite: 170]
+    }
+
+    // ==================== 蛋糕 DIY 与弹幕逻辑区 ====================
     function bakeBase(baseKey) {
-        const b = document.getElementById('model-base');
-        b.style.display = 'block';
-        b.style.backgroundImage = 'none';
-        b.style.backgroundColor = assetConfig.cakeBaseColors[baseKey] || assetConfig.cakeBaseColors.strawberry;
-        bOk = true; evalBake();
+        const b = document.getElementById('model-base'); [cite: 188]
+        b.style.display = 'block'; [cite: 189]
+        b.style.backgroundImage = 'none'; [cite: 189]
+        b.style.backgroundColor = assetConfig.cakeBaseColors[baseKey] || assetConfig.cakeBaseColors.strawberry; [cite: 189]
+        bOk = true; evalBake(); [cite: 189]
     }
     function bakeCream(creamKey) {
-        if(!bOk) { alert('请先选择蛋糕底胚！'); return; }
-        const cream = document.getElementById('model-cream');
-        cream.style.display = 'block';
-        cream.style.backgroundImage = 'none';
-        cream.style.backgroundColor = assetConfig.creamColors[creamKey] || assetConfig.creamColors.peach;
-        cOk = true; evalBake();
+        if(!bOk) { alert('请先选择蛋糕底胚！'); return; } [cite: 190]
+        const cream = document.getElementById('model-cream'); [cite: 191]
+        cream.style.display = 'block'; [cite: 191]
+        cream.style.backgroundImage = 'none'; [cite: 191]
+        cream.style.backgroundColor = assetConfig.creamColors[creamKey] || assetConfig.creamColors.peach; [cite: 192]
+        cOk = true; evalBake(); [cite: 192]
     }
     function addSticker(stickerKey) {
-        const canvas = document.getElementById('cake-canvas');
-        if(!canvas) { alert('找不到蛋糕画布 cake-canvas'); return; }
+        const canvas = document.getElementById('cake-canvas'); [cite: 192]
+        if(!canvas) return; [cite: 193]
+        if(!bOk) bakeBase('strawberry'); [cite: 193]
+        if(!cOk) bakeCream('peach'); [cite: 194]
 
-        // 防呆：玩家忘记先点底胚/奶油时，先自动显示默认蛋糕
-        if(!bOk) bakeBase('strawberry');
-        if(!cOk) bakeCream('peach');
+        const st = document.createElement('div'); [cite: 194]
+        st.className = 'draggable-sticker'; [cite: 194]
+        st.style.backgroundImage = `url('${assetConfig.stickers[stickerKey]}')`; [cite: 194]
 
-        const st = document.createElement('div');
-        st.className = 'draggable-sticker';
-        st.style.backgroundImage = `url('${assetConfig.stickers[stickerKey]}')`;
+        const pos = getRandomCakePosition(canvas); [cite: 194]
+        st.style.left = `${pos.x}px`; st.style.top = `${pos.y}px`; [cite: 194, 195]
 
-        const pos = getRandomCakePosition(canvas);
-        st.style.left = `${pos.x}px`;
-        st.style.top = `${pos.y}px`;
-
-        canvas.appendChild(st);
-        bindStickerPhysics(st, canvas);
-        evalBake();
+        canvas.appendChild(st); [cite: 195]
+        bindStickerPhysics(st, canvas); [cite: 195]
+        evalBake(); [cite: 195]
     }
-
     function getRandomCakePosition(canvas) {
-        // 固定落在蛋糕上半区，保证一眼能看到
-        const cakeLeft = canvas.clientWidth / 2 - 95;
-        const x = cakeLeft + Math.random() * 160;
-        const y = 105 + Math.random() * 85;
-        return { x: Math.max(10, Math.min(x, canvas.clientWidth - 66)), y: Math.max(10, Math.min(y, canvas.clientHeight - 66)) };
+        const cakeLeft = canvas.clientWidth / 2 - 95; [cite: 195]
+        const x = cakeLeft + Math.random() * 160; [cite: 196]
+        const y = 105 + Math.random() * 85; [cite: 196]
+        return { x: Math.max(10, Math.min(x, canvas.clientWidth - 66)), y: Math.max(10, Math.min(y, canvas.clientHeight - 66)) }; [cite: 197]
     }
-
     function randomDecorateCake() {
-        if(!cOk) { alert('请先抹好奶油再随机摆放装饰哦！'); return; }
-        const keys = ['strawberry', 'sheep_sticker', 'bunny_sticker', 'heart', 'star', 'candle'];
-        const count = Math.floor(Math.random() * 5) + 5;
-        for(let i = 0; i < count; i++) {
-            addSticker(keys[Math.floor(Math.random() * keys.length)]);
+        if(!cOk) { alert('请先抹好奶油再随机摆放装饰哦！'); return; } [cite: 198]
+        const keys = ['strawberry', 'sheep_sticker', 'bunny_sticker', 'heart', 'star', 'candle']; [cite: 199]
+        const count = Math.floor(Math.random() * 5) + 5; [cite: 200]
+        for(let i = 0; i < count; i++) { [cite: 200]
+            addSticker(keys[Math.floor(Math.random() * keys.length)]); [cite: 200]
         }
-        evalBake();
+        evalBake(); [cite: 201]
     }
-
     function bindStickerPhysics(item, boundary) {
-        let active = false; let sx, sy, ox, oy;
-        const s = (e) => {
-            active = true; const p = e.touches ? e.touches[0] : e;
-            sx = p.clientX; sy = p.clientY; ox = item.offsetLeft; oy = item.offsetTop;
+        let active = false; [cite: 201]
+        let sx, sy, ox, oy; [cite: 202]
+        const s = (e) => { [cite: 202]
+            active = true; [cite: 202]
+            const p = e.touches ? e.touches[0] : e; [cite: 203]
+            sx = p.clientX; sy = p.clientY; ox = item.offsetLeft; oy = item.offsetTop; [cite: 203]
         };
-        const m = (e) => {
-            if(!active) return; if(e.cancelable) e.preventDefault();
-            const p = e.touches ? e.touches[0] : e;
-            let nx = ox + (p.clientX - sx); let ny = oy + (p.clientY - sy);
-            const mx = boundary.clientWidth - item.clientWidth;
-            const my = boundary.clientHeight - item.clientHeight;
-            if(nx < 0) nx = 0; if(nx > mx) nx = mx; if(ny < 0) ny = 0; if(ny > my) ny = my;
-            item.style.left = `${nx}px`; item.style.top = `${ny}px`;
+        const m = (e) => { [cite: 204]
+            if(!active) return; [cite: 204]
+            if(e.cancelable) e.preventDefault(); [cite: 205]
+            const p = e.touches ? e.touches[0] : e; [cite: 205]
+            let nx = ox + (p.clientX - sx); [cite: 205]
+            let ny = oy + (p.clientY - sy); [cite: 206]
+            const mx = boundary.clientWidth - item.clientWidth; [cite: 206]
+            const my = boundary.clientHeight - item.clientHeight; [cite: 206]
+            if(nx < 0) nx = 0; if(nx > mx) nx = mx; if(ny < 0) ny = 0; [cite: 207]
+            if(ny > my) ny = my; [cite: 208]
+            item.style.left = `${nx}px`; item.style.top = `${ny}px`; [cite: 208]
         };
-        const en = () => active = false;
-        item.addEventListener('mousedown', s); window.addEventListener('mousemove', m); window.addEventListener('mouseup', en);
-        item.addEventListener('touchstart', s, {passive:false}); window.addEventListener('touchmove', m, {passive:false}); window.addEventListener('touchend', en);
+        const en = () => active = false; [cite: 209]
+        item.addEventListener('mousedown', s); window.addEventListener('mousemove', m); window.addEventListener('mouseup', en); [cite: 209]
+        item.addEventListener('touchstart', s, {passive:false}); window.addEventListener('touchmove', m, {passive:false}); [cite: 209]
+        window.addEventListener('touchend', en); [cite: 210]
     }
-
-    function evalBake() { if(bOk && cOk) document.getElementById('finish-bake-btn').style.display = 'block'; }
-
+    function evalBake() { if(bOk && cOk) document.getElementById('finish-bake-btn').style.display = 'block'; } [cite: 210]
     function goToLive() {
-        document.getElementById('reward-player').pause();
-        const liveImg = document.getElementById('live-center-img');
-        liveImg.style.backgroundImage = `url('${assetConfig.finalScene.centerImage}')`;
-        fadeTo('scr-live');
+        document.getElementById('reward-player').pause(); [cite: 211]
+        const liveImg = document.getElementById('live-center-img'); [cite: 211]
+        liveImg.style.backgroundImage = `url('${assetConfig.finalScene.centerImage}')`; [cite: 212]
+        fadeTo('scr-live'); [cite: 212]
     }
-
-    function triggerNpcDance() {
-        const npc = document.getElementById('live-npc');
-        document.getElementById('dialogue').innerText = `🎵 杨博文：“极限卡点太帅了！感谢你为我搭建的专属生日舞台！”`;
-
-        document.getElementById('model-base').style.transform = 'scale(0.35) translate(-160px, 80px)';
-        document.querySelectorAll('.draggable-sticker').forEach(s => {
-            s.style.pointerEvents = 'none'; s.style.transform = 'scale(0.5) translate(-110px, 60px)';
-        });
-
-        let cnt = 0;
-        const t = setInterval(() => {
-            cnt++;
-            npc.style.transform = `translateX(-50%) translateY(${cnt % 2 === 0 ? '-12px' : '0px'}) rotate(${cnt % 3 === 0 ? '10deg' : '-10deg'})`;
-            if(cnt > 20) { clearInterval(t); npc.style.transform = 'translateX(-50%)'; }
-        }, 140);
-    }
-
     function sendDanmaku() {
-        const ipt = document.getElementById('danmaku-input');
-        const txt = ipt.value.trim(); if(!txt) return;
-
-        const f = document.getElementById('live-field');
-        const dam = document.createElement('div');
-        dam.className = 'danmaku-lane'; dam.innerText = txt;
-
-        const cols = ['#ffffff', '#ffeb3b', '#ff7675', '#fd79a8', '#55efc4', '#a29bfe'];
-        dam.style.color = cols[Math.floor(Math.random() * cols.length)];
-        dam.style.top = `${Math.random() * 110 + 15}px`;
-
-        f.appendChild(dam); ipt.value = '';
-        setTimeout(() => dam.remove(), 6000);
+        const ipt = document.getElementById('danmaku-input'); [cite: 215]
+        const txt = ipt.value.trim(); if(!txt) return; [cite: 216]
+        const f = document.getElementById('live-field'); [cite: 216]
+        const dam = document.createElement('div'); [cite: 216]
+        dam.className = 'danmaku-lane'; dam.innerText = txt; [cite: 216]
+        const cols = ['#ffffff', '#ffeb3b', '#ff7675', '#fd79a8', '#55efc4', '#a29bfe']; [cite: 217]
+        dam.style.color = cols[Math.floor(Math.random() * cols.length)]; [cite: 217]
+        dam.style.top = `${Math.random() * 110 + 15}px`; [cite: 218]
+        f.appendChild(dam); ipt.value = ''; [cite: 218]
+        setTimeout(() => dam.remove(), 6000); [cite: 218]
     }
-
-
-    // ✅ 双保险：不用只依赖 HTML onclick，按钮点击也强制绑定一次
+    
+    // 默认键盘监听事件 [cite: 166]
+    window.addEventListener('keydown', (e) => {
+        if(!document.getElementById('scr-game').classList.contains('active')) return;
+        if(e.key === 'ArrowLeft') hitTrack(0);
+        if(e.key === 'ArrowUp') hitTrack(1);
+        if(e.key === 'ArrowRight') hitTrack(2);
+    });
 </script>
 
 </body>
