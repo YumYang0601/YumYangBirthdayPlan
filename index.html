@@ -496,55 +496,51 @@
         }
     }
 
+    window.addEventListener('DOMContentLoaded', () => {
+        const bgm = document.getElementById('rhythm-bgm');
+        if (bgm) {
+            bgm.src = assetConfig.bgm;
+            bgm.load(); 
+        }
+        
+        document.addEventListener("WeixinJSBridgeReady", function () {
+            if (bgm) {
+                bgm.play().then(() => {
+                    // 如果在微信里成功自动触发了，先暂停，等玩家点“开始游戏”再播
+                    bgm.pause();
+                    bgm.currentTime = 0;
+                }).catch(e => console.log("微信自动解锁失败"));
+            }
+        }, false);
+    });
+
     function playRhythmBgm() {
         const bgm = document.getElementById('rhythm-bgm');
         if(!bgm) return;
-        bgm.src = assetConfig.bgm;
-        bgm.currentTime = 0;
         bgm.volume = 0.75;
-        const playPromise = bgm.play();
-        if(playPromise && playPromise.catch) {
-            playPromise.catch(() => {
-                console.log('BGM 需要用户再次点击页面后播放');
-            });
-        }
-    }
-function startGame() {
-
-    const bgm = document.getElementById('rhythm-bgm');
-
-    if(bgm){
-        bgm.src = assetConfig.bgm;
-        bgm.volume = 0.75;
-
-        bgm.play().catch(err=>{
-            console.log(err);
+        bgm.play().catch((err) => {
+            console.log('BGM 播放失败:', err);
         });
     }
 
-    fadeTo('scr-game');
-}
+    function startGame() {
+        playRhythmBgm(); // 点击开始游戏时直接调用播放
+        fadeTo('scr-game');
+    }
     
     function forcePlayBgm() {
+        const bgm = document.getElementById('rhythm-bgm');
+        if(!bgm) return;
 
-    const bgm = document.getElementById('rhythm-bgm');
+        bgm.volume = 0.8;
+        bgm.play().then(() => {
+            console.log("音频强制播放成功");
+        }).catch(err => {
+            console.log(err);
+            alert("播放失败！请确认手机没有开启【侧边静音开关】且【媒体音量已调大】，然后重试。");
+        });
+    }
 
-    if(!bgm) return;
-
-    bgm.src = assetConfig.bgm;
-
-    bgm.load();
-
-    bgm.currentTime = 0;
-
-    bgm.volume = 0.8;
-
-    bgm.play().catch(err=>{
-        console.log(err);
-        alert("请关闭静音模式后再点击一次");
-    });
-
-}
     function stopRhythmBgm() {
         const bgm = document.getElementById('rhythm-bgm');
         if(!bgm) return;
