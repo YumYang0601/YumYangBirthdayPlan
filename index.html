@@ -430,8 +430,9 @@
                 🎂 创意大蛋糕已送达！点击上方的博文NPC解锁感谢寄语吧！
             </div>
 
-            <div class="input-bar">
-                <input type="text" id="danmaku-input" placeholder="输入送给杨博文的0601生日寄语..." maxlength="22">
+           <div class="input-bar">
+               <input type="color" id="danmaku-color" value="#ff7675" style="width:42px;border:none;background:transparent;">
+               <input type="text" id="danmaku-input" placeholder="输入送给杨博文的0601生日寄语..." maxlength="22">
                 <button class="circle-btn" onclick="sendDanmaku()"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
         </div>
@@ -491,6 +492,7 @@
     let totalNotesHit = 0;      // 🌟 核心增量：记录玩家真正点击成功的次数
     let targetGoalCount = 10;   // 🌟 核心设定：基础版10次，Hard版20次
     let liveNotes = []; let bOk = false, cOk = false;
+    let danmakuMessages = [];
     let noteSpawnerTimer = null; // 动态音符发生器定时器
     const praiseWords = ["太棒了", "非常好", "卡点王赞赞", "精准踩点", "节奏天才", "好会卡", "高光瞬间", "稳稳命中", "全场尖叫", "漂亮！"];
 
@@ -876,25 +878,39 @@ function stopEndBgm() {
 
     function sendDanmaku() {
     const ipt = document.getElementById('danmaku-input');
+    const colorPicker = document.getElementById('danmaku-color');
     const txt = ipt.value.trim();
     if(!txt) return;
 
-    const f = document.getElementById('live-field');
+    const msg = {
+        text: txt,
+        color: colorPicker ? colorPicker.value : '#ff7675'
+    };
 
-    const dam = document.createElement('div');
-    dam.className = 'danmaku-lane';
-    dam.innerText = txt;
-
-    const cols = ['#ffffff', '#ffeb3b', '#ff7675', '#fd79a8', '#55efc4', '#a29bfe'];
-    dam.style.color = cols[Math.floor(Math.random() * cols.length)];
-    dam.style.top = `${Math.random() * 230 + 20}px`;
-    dam.style.left = '100%';
-    dam.style.zIndex = '50';
-
-    f.appendChild(dam);
+    danmakuMessages.push(msg);
     ipt.value = '';
 
-    setTimeout(() => dam.remove(), 7000);
+    playDanmaku(msg, 2);
+}
+
+function playDanmaku(msg, times = 1) {
+    const f = document.getElementById('live-field');
+    if(!f) return;
+
+    for(let i = 0; i < times; i++) {
+        setTimeout(() => {
+            const dam = document.createElement('div');
+            dam.className = 'danmaku-lane';
+            dam.innerText = msg.text;
+            dam.style.color = msg.color;
+            dam.style.top = `${Math.random() * 300 + 20}px`;
+            dam.style.left = '100%';
+            dam.style.zIndex = '60';
+
+            f.appendChild(dam);
+            setTimeout(() => dam.remove(), 6500);
+        }, i * 1200);
+    }
 }
 
 
