@@ -15,27 +15,30 @@
             --text-dark: #2d3436;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; 
+            touch-action: manipulation; /* 优化手机端点击延迟与响应 */
+        }
+        
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
             overflow: hidden; font-family: 'Noto Serif SC', sans-serif;
-            background: var(--bg-gradient); user-select: none;
+            background: var(--bg-gradient);
+            /* 移除了 user-select: none，防止部分手机内核锁死触控事件 */
         }
 
         .game-screen {
             position: absolute; width: 100%; height: 100%; top: 0; left: 0;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none;
-            transform: scale(0.95);
-            transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-            padding: 15px;
+            opacity: 0; pointer-events: none; transform: scale(0.95);
+            transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1); padding: 15px;
         }
         .game-screen.active { opacity: 1; pointer-events: auto; transform: scale(1); }
 
         .glass-card {
             width: 100%; max-width: 440px; background: var(--panel-bg);
-            border-radius: 24px; padding: 22px;
-            box-shadow: 0 15px 35px rgba(255, 118, 118, 0.15);
+            border-radius: 24px; padding: 22px; box-shadow: 0 15px 35px rgba(255, 118, 118, 0.15);
             text-align: center; border: 3px solid #ffffff;
         }
 
@@ -49,26 +52,26 @@
             font-weight: bold; color: var(--text-dark); text-align: left;
             margin: 10px 0 5px 0; font-size: 0.95rem; border-left: 4px solid var(--primary-pink); padding-left: 6px;
         }
-        .item-grid { display: flex; gap: 12px; justify-content: center; margin-bottom: 12px; }
+        .item-grid { display: flex; gap: 12px; justify-content: center; margin-bottom: 12px; width: 100%; }
+        
         .grid-card {
             background: white; border: 2.5px solid #dfe6e9; border-radius: 16px;
             padding: 10px; flex: 1; cursor: pointer; transition: all 0.2s; text-align: center;
+            -webkit-touch-callout: none; /* 防止手机长按弹出菜单 */
         }
         .grid-card.selected { border-color: var(--primary-pink); background: #fff5f5; transform: scale(1.02); }
         
-        .role-img-wrap {
-            width: 70px; height: 75px; margin: 0 auto 6px auto;
-            background-size: contain; background-repeat: no-repeat; background-position: center;
-        }
+        .role-img-wrap { width: 70px; height: 75px; margin: 0 auto 6px auto; background-size: contain; background-repeat: no-repeat; background-position: center; pointer-events: none; }
 
         .song-list { display: flex; flex-direction: column; gap: 8px; width: 100%; margin-bottom: 15px; }
         .song-option {
             background: white; border: 2.5px solid #dfe6e9; border-radius: 14px;
             padding: 12px 15px; cursor: pointer; text-align: left; display: flex;
             align-items: center; justify-content: space-between; transition: all 0.2s;
+            -webkit-touch-callout: none;
         }
         .song-option.selected { border-color: var(--primary-pink); background: #fff5f5; }
-        .song-info { display: flex; flex-direction: column; }
+        .song-info { display: flex; flex-direction: column; pointer-events: none; }
         .song-title { font-weight: bold; font-size: 0.95rem; color: var(--text-dark); }
         .song-meta { font-size: 0.75rem; color: #888; margin-top: 2px; }
         .song-badge { font-size: 0.8rem; font-weight: bold; padding: 3px 8px; border-radius: 20px; background: #e3faf2; color: #20c997; }
@@ -76,17 +79,10 @@
         /* ================= 核心节奏大舞台 ================= */
         .rhythm-stage {
             position: relative; width: 100%; max-width: 360px; height: 380px;
-            background: #ffd6e7; border: 5px solid #ffffff;
-            border-radius: 32px; overflow: hidden; margin-bottom: 12px;
+            background: #ffd6e7; border: 5px solid #ffffff; border-radius: 32px; overflow: hidden; margin-bottom: 12px;
         }
-        .flash-layer {
-            position: absolute; width: 100%; height: 100%; top: 0; left: 0;
-            background: transparent; pointer-events: none; z-index: 1; transition: background 0.08s;
-        }
-        .track {
-            position: absolute; top: 0; width: 33.33%; height: 100%;
-            border-right: 1px dashed rgba(255,255,255,0.12);
-        }
+        .flash-layer { position: absolute; width: 100%; height: 100%; top: 0; left: 0; background: transparent; pointer-events: none; z-index: 1; transition: background 0.08s; }
+        .track { position: absolute; top: 0; width: 33.33%; height: 100%; border-right: 1px dashed rgba(255,255,255,0.12); }
         .track-0 { left: 0; } .track-1 { left: 33.33%; } .track-2 { left: 66.66%; border-right: none; }
 
         .dancer-avatar {
@@ -95,10 +91,7 @@
             background-size: contain; background-repeat: no-repeat; background-position: center;
         }
         
-        .judge-zone {
-            position: absolute; bottom: 12px; width: 100%; height: 60px;
-            display: flex; justify-content: space-around; padding: 0 10px; z-index: 5;
-        }
+        .judge-zone { position: absolute; bottom: 12px; width: 100%; height: 60px; display: flex; justify-content: space-around; padding: 0 10px; z-index: 5; }
         .judge-ring {
             width: 52px; height: 52px; border: 3.5px solid #fff; border-radius: 50%;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -110,39 +103,15 @@
             position: absolute; width: 46px; height: 46px; background: #ff7675;
             border-radius: 50%; border: 2.5px solid white; display: flex;
             align-items: center; justify-content: center; color: white;
-            font-weight: bold; font-size: 1.2rem; z-index: 4;
-            box-shadow: 0 3px 8px rgba(255,118,118,0.3);
+            font-weight: bold; font-size: 1.2rem; z-index: 4; box-shadow: 0 3px 8px rgba(255,118,118,0.3);
         }
 
-        /* 顶部通关计数器核心UI */
-        .target-counter {
-            position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.6);
-            color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem;
-            font-weight: bold; z-index: 30; border: 1px solid rgba(255,255,255,0.3);
-        }
-        .combo-text {
-            position: absolute; top: 50px; left: 50%; transform: translateX(-50%);
-            color: #fdcb6e; font-family: 'ZCOOL KuaiLe', sans-serif; font-size: 2rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5); z-index: 20; pointer-events: none;
-        }
-        .float-feedback {
-            position: absolute; top: 140px; width: 100%; text-align: center;
-            font-weight: bold; font-size: 1.4rem; text-shadow: 0 2px 5px rgba(0,0,0,0.7); z-index: 20;
-        }
+        .target-counter { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.6); color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; z-index: 30; border: 1px solid rgba(255,255,255,0.3); }
+        .combo-text { position: absolute; top: 50px; left: 50%; transform: translateX(-50%); color: #fdcb6e; font-family: 'ZCOOL KuaiLe', sans-serif; font-size: 2rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); z-index: 20; pointer-events: none; }
+        .float-feedback { position: absolute; top: 140px; width: 100%; text-align: center; font-weight: bold; font-size: 1.4rem; text-shadow: 0 2px 5px rgba(0,0,0,0.7); z-index: 20; }
 
         .beat-word-pop {
-            position: absolute;
-            padding: 6px 12px;
-            border-radius: 999px;
-            background: rgba(255,255,255,0.92);
-            color: var(--primary-pink);
-            font-family: 'ZCOOL KuaiLe', sans-serif;
-            font-size: 1.05rem;
-            font-weight: bold;
-            z-index: 25;
-            pointer-events: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.18);
-            animation: beatPop 0.75s ease-out forwards;
+            position: absolute; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,0.92); color: var(--primary-pink); font-family: 'ZCOOL KuaiLe', sans-serif; font-size: 1.05rem; font-weight: bold; z-index: 25; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.18); animation: beatPop 0.75s ease-out forwards;
         }
         @keyframes beatPop {
             0% { opacity: 0; transform: scale(0.6) translateY(8px); }
@@ -151,125 +120,51 @@
         }
 
         .pad-row { display: flex; gap: 10px; width: 100%; max-width: 360px; margin-bottom: 8px; }
-        .pad-btn {
-            flex: 1; background: white; border: 2px solid var(--primary-pink);
-            padding: 10px; border-radius: 14px; font-weight: bold; color: var(--primary-pink); cursor: pointer;
-        }
+        .pad-btn { flex: 1; background: white; border: 2px solid var(--primary-pink); padding: 10px; border-radius: 14px; font-weight: bold; color: var(--primary-pink); cursor: pointer; }
 
         /* ================= 通关奖励视频投放区 ================= */
-        .video-box-container {
-            width: 100%; max-width: 360px; height: 210px; background: #000;
-            border-radius: 20px; overflow: hidden; border: 4px solid white;
-            margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        }
+        .video-box-container { width: 100%; max-width: 360px; height: 210px; background: #000; border-radius: 20px; overflow: hidden; border: 4px solid white; margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
         .video-box-container video { width: 100%; height: 100%; object-fit: cover; }
 
         /* ================= 自由烘焙定制区 ================= */
-        .cake-box {
-             position: relative; width: 100%; max-width: 480px; height: 450px;
-            background: #fff6f6; border: 5px dashed var(--primary-pink); border-radius: 32px; overflow: hidden; margin-bottom: 12px;
-        }
-        .plate {
-            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
-            width: 340px; height: 18px; background: #e0e0e0; border-radius: 50%; z-index: 1;
-        }
+        .cake-box { position: relative; width: 100%; max-width: 480px; height: 450px; background: #fff6f6; border: 5px dashed var(--primary-pink); border-radius: 32px; overflow: hidden; margin-bottom: 12px; }
+        .plate { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); width: 340px; height: 18px; background: #e0e0e0; border-radius: 50%; z-index: 1; }
         .cake-model-body {
-            position: absolute; bottom: 42px; left: 50%; transform: translateX(-50%);
-            width: 300px; height: 155px; z-index: 2; display: none;
-            border-radius: 26px 26px 14px 14px;
-            box-shadow: inset 0 -8px 0 rgba(0,0,0,0.06), 0 8px 14px rgba(0,0,0,0.08);
-            border: 3px solid rgba(255,255,255,0.85);
+            position: absolute; bottom: 42px; left: 50%; transform: translateX(-50%); width: 300px; height: 155px; z-index: 2; display: none; border-radius: 26px 26px 14px 14px; box-shadow: inset 0 -8px 0 rgba(0,0,0,0.06), 0 8px 14px rgba(0,0,0,0.08); border: 3px solid rgba(255,255,255,0.85);
         }
-        .cake-model-body::after {
-            content: ""; position: absolute; left: 0; right: 0; top: 45px; height: 10px;
-            background: rgba(255,255,255,0.45); border-radius: 999px;
-        }
+        .cake-model-body::after { content: ""; position: absolute; left: 0; right: 0; top: 45px; height: 10px; background: rgba(255,255,255,0.45); border-radius: 999px; }
         .cream-top-layer {
-            position: absolute; left: 50%; top: -18px; transform: translateX(-50%);
-            width: 310px; height: 65px; display: none; z-index: 3;
-            border-radius: 50% 50% 38% 38%;
-            border: 3px solid rgba(255,255,255,0.9);
-            box-shadow: 0 6px 0 rgba(255,255,255,0.45), inset 0 -5px 0 rgba(0,0,0,0.04);
+            position: absolute; left: 50%; top: -18px; transform: translateX(-50%); width: 310px; height: 65px; display: none; z-index: 3; border-radius: 50% 50% 38% 38%; border: 3px solid rgba(255,255,255,0.9); box-shadow: 0 6px 0 rgba(255,255,255,0.45), inset 0 -5px 0 rgba(0,0,0,0.04);
         }
-        .cream-top-layer::after {
-            content: ""; position: absolute; left: 16px; right: 16px; bottom: -16px; height: 24px;
-            background: inherit; border-radius: 0 0 18px 18px;
-            clip-path: polygon(0 0, 12% 100%, 26% 15%, 40% 100%, 56% 15%, 72% 100%, 88% 10%, 100% 80%, 100% 0);
-        }
+        .cream-top-layer::after { content: ""; position: absolute; left: 16px; right: 16px; bottom: -16px; height: 24px; background: inherit; border-radius: 0 0 18px 18px; clip-path: polygon(0 0, 12% 100%, 26% 15%, 40% 100%, 56% 15%, 72% 100%, 88% 10%, 100% 80%, 100% 0); }
         
-        .draggable-sticker {
-            position: absolute; width: 58px; height: 58px; z-index: 999; cursor: grab; touch-action: none;
-            background-size: contain; background-repeat: no-repeat; background-position: center;
-            background-color: transparent !important; border: none !important;
-            border-radius: 0 !important; box-shadow: none !important;
-        }
-        .live-center-img {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100%;
-            height: 100%;
-            z-index: 18;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            pointer-events: none;
-        }
+        .draggable-sticker { position: absolute; width: 58px; height: 58px; z-index: 999; cursor: grab; touch-action: none; background-size: contain; background-repeat: no-repeat; background-position: center; background-color: transparent !important; border: none !important; border-radius: 0 !important; box-shadow: none !important; }
+        .live-center-img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; z-index: 18; background-size: contain; background-repeat: no-repeat; background-position: center; pointer-events: none; }
 
-        .section-label {
-            font-size: 0.9rem; font-weight: bold; color: var(--text-dark); text-align: left;
-            margin: 8px 0 5px 0; border-left: 4px solid var(--primary-pink); padding-left: 6px;
-        }
+        .section-label { font-size: 0.9rem; font-weight: bold; color: var(--text-dark); text-align: left; margin: 8px 0 5px 0; border-left: 4px solid var(--primary-pink); padding-left: 6px; }
         .btn-flex { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
-        .mini-action-btn {
-            flex: 1; min-width: 80px; background: white; border: 2px solid var(--primary-pink);
-            color: var(--primary-pink); padding: 7px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 0.8rem;
-        }
+        .mini-action-btn { flex: 1; min-width: 80px; background: white; border: 2px solid var(--primary-pink); color: var(--primary-pink); padding: 7px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 0.8rem; }
 
         /* ================= 最终章Live与弹幕 ================= */
-        .live-arena {
-            position: relative; width: 360px; height: 360px;
-            background: linear-gradient(to bottom, #1e272e 0%, #2c3e50 100%);
-            border-radius: 28px; overflow: hidden; border: 4px solid white; margin-bottom: 12px;
-        }
-        .npc-star {
-            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-            width: 80px; height: 90px; cursor: pointer; z-index: 20; transition: all 0.25s;
-            background-size: contain; background-repeat: no-repeat; background-position: center;
-        }
-        .danmaku-lane {
-            position: absolute; white-space: nowrap; font-weight: bold; font-size: 1.05rem;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.8); animation: scrollLeft 6s linear forwards; pointer-events: none;
-        }
+        .live-arena { position: relative; width: 360px; height: 360px; background: linear-gradient(to bottom, #1e272e 0%, #2c3e50 100%); border-radius: 28px; overflow: hidden; border: 4px solid white; margin-bottom: 12px; }
+        .danmaku-lane { position: absolute; white-space: nowrap; font-weight: bold; font-size: 1.05rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); animation: scrollLeft 6s linear forwards; pointer-events: none; }
         @keyframes scrollLeft { from { left: 100%; } to { left: -120%; } }
 
-        .input-bar {
-            display: flex; background: white; padding: 4px; border-radius: 30px; border: 2px solid var(--primary-pink);
-        }
+        .input-bar { display: flex; background: white; padding: 4px; border-radius: 30px; border: 2px solid var(--primary-pink); }
         .input-bar input { flex: 1; border: none; outline: none; padding: 0 12px; font-size: 0.85rem; }
-        .circle-btn {
-            width: 36px; height: 36px; background: var(--primary-pink); color: white;
-            border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
-        }
+        .circle-btn { width: 36px; height: 36px; background: var(--primary-pink); color: white; border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
         .action-submit-btn {
             width: 100%; background: var(--primary-pink); color: white; border: none;
             padding: 12px; font-size: 1.05rem; border-radius: 14px; font-weight: bold;
             cursor: pointer; margin-top: 5px; box-shadow: 0 5px 12px rgba(255,118,118,0.25);
+            opacity: 1 !important; pointer-events: auto !important; /* 确保强制永久可点击 */
         }
     </style>
 </head>
 <body>
 
-<audio id="rhythm-bgm"
-       src="audio/rhythm-bgm.mp3"
-       preload="auto"
-       loop
-       playsinline
-       controls
-       style="display:none;">
-</audio>
+<audio id="rhythm-bgm" src="audio/rhythm-bgm.mp3" preload="auto" loop playsinline style="display:none;"></audio>
 
 <div class="page-viewport">
 
@@ -277,14 +172,15 @@
         <div class="glass-card">
             <h1 class="title">✨ 0601 Rhythm Challenge ✨</h1>
             <div class="subtitle">欢迎来到专属排练室，请定制你的金曲舞台配置：</div>
-
+ 
             <div class="select-row">1. 请选择博文专属形象</div>
             <div class="item-grid">
-                <div class="grid-card" id="role-sheep" onclick="chooseRole('sheep')">
+                <div class="grid-card" id="role-sheep" onclick="chooseRole('sheep')" ontouchstart="chooseRole('sheep'); event.preventDefault();">
                     <div class="role-img-wrap" style="background-image: url('image/sheep.png');"></div>
                     <div class="card-name">软萌小羊</div>
                 </div>
-                <div class="grid-card" id="role-bunny" onclick="chooseRole('bunny')">
+        
+                <div class="grid-card" id="role-bunny" onclick="chooseRole('bunny')" ontouchstart="chooseRole('bunny'); event.preventDefault();">
                     <div class="role-img-wrap" style="background-image: url('image/rabbit.png');"></div>
                     <div class="card-name">元气小兔</div>
                 </div>
@@ -292,14 +188,14 @@
 
             <div class="select-row">2. 选择你想挑战的难度等级</div>
             <div class="song-list">
-                <div class="song-option" id="song-0" onclick="chooseSong(0)">
+                <div class="song-option" id="song-0" onclick="chooseSong(0)" ontouchstart="chooseSong(0); event.preventDefault();">
                     <div class="song-info">
                         <span class="song-title">🎵 基础版 </span>
                         <span class="song-meta">左右交替律动 · 需【精准成功踩点 10 次】通关</span>
                     </div>
                     <span class="song-badge">EASY</span>
                 </div>
-                <div class="song-option" id="song-1" onclick="chooseSong(1)">
+                <div class="song-option" id="song-1" onclick="chooseSong(1)" ontouchstart="chooseSong(1); event.preventDefault();">
                     <div class="song-info">
                         <span class="song-title">🔥 进阶版 </span>
                         <span class="song-meta">疾速全轨道混击 · 需【精准成功踩点 20 次】通关</span>
@@ -308,30 +204,19 @@
                 </div>
             </div>
 
-            <button
-            class="action-submit-btn"
-            id="start-btn"
-            onclick="startGame()">
-            Challenge Start ➔
+            <button class="action-submit-btn" id="start-btn" onclick="startGame()" ontouchstart="startGame(); event.preventDefault();">
+                Challenge Start ➔
             </button>
         </div>
     </div>
 
     <div class="game-screen" id="scr-game">
         <h1 class="title"><i class="fa-solid fa-compact-disc fa-spin"></i> 正在播放音乐...</h1>
-        
-        <button
-        class="action-submit-btn"
-        style="max-width:260px;margin-bottom:10px;"
-        onclick="forcePlayBgm()">
-        🎵 点我开启音乐
-    </button>
-        
-        <div class="subtitle">键盘← ↑ →方向键或敲击屏幕下方大键，左右上随机出现，卡点词也会随机弹出，BGM 使用 audio/rhythm-bgm.mp3！</div>
+        <button class="action-submit-btn" style="max-width:260px;margin-bottom:10px;" onclick="forcePlayBgm()" ontouchstart="forcePlayBgm(); event.preventDefault();">🎵 点我开启音乐</button>
+        <div class="subtitle">键盘← ↑ →方向键或敲击屏幕下方大键，左右上随机出现，卡点词也会随机弹出！</div>
 
         <div class="rhythm-stage" id="game-stage">
             <div class="target-counter" id="ui-progress">通关进度: 0 / 10</div>
-            
             <div class="flash-layer" id="bg-flash"></div>
             <div class="combo-text" id="ui-combo" style="display:none;">0 COMBO</div>
             <div class="float-feedback" id="ui-feedback"></div>
@@ -350,21 +235,19 @@
         </div>
 
         <div class="pad-row">
-            <button class="pad-btn" onclick="hitTrack(0)"> LEFT ← </button>
-            <button class="pad-btn" onclick="hitTrack(1)"> JUMP ↑ </button>
-            <button class="pad-btn" onclick="hitTrack(2)"> RIGHT → </button>
+            <button class="pad-btn" onclick="hitTrack(0)" ontouchstart="hitTrack(0); event.preventDefault();"> LEFT ← </button>
+            <button class="pad-btn" onclick="hitTrack(1)" ontouchstart="hitTrack(1); event.preventDefault();"> JUMP ↑ </button>
+            <button class="pad-btn" onclick="hitTrack(2)" ontouchstart="hitTrack(2); event.preventDefault();"> RIGHT → </button>
         </div>
     </div>
 
     <div class="game-screen" id="scr-video-reward">
         <h1 class="title"><i class="fa-solid fa-trophy"></i> 完美通关！</h1>
         <div class="subtitle">恭喜解锁专属通关舞台！</div>
-        
         <div class="video-box-container">
             <video id="reward-player" controls playsinline></video>
         </div>
-
-        <button class="action-submit-btn" style="max-width:360px;" onclick="fadeTo('scr-bake')">收下谢礼，前往做蛋糕区 ➔</button>
+        <button class="action-submit-btn" style="max-width:360px;" onclick="fadeTo('scr-bake')" ontouchstart="fadeTo('scr-bake'); event.preventDefault();">收下谢礼，前往做蛋糕区 ➔</button>
     </div>
 
     <div class="game-screen" id="scr-bake">
@@ -381,51 +264,48 @@
         <div class="glass-card" style="padding:15px 20px;">
             <div class="section-label">1. 定制底胚口味</div>
             <div class="btn-flex">
-                <button class="mini-action-btn" onclick="bakeBase('original')">原味戚风</button>
-                <button class="mini-action-btn" onclick="bakeBase('strawberry')">草莓粉粉</button>
-                <button class="mini-action-btn" onclick="bakeBase('blueberry')">蓝莓梦幻</button>
+                <button class="mini-action-btn" onclick="bakeBase('original')" ontouchstart="bakeBase('original'); event.preventDefault();">原味戚风</button>
+                <button class="mini-action-btn" onclick="bakeBase('strawberry')" ontouchstart="bakeBase('strawberry'); event.preventDefault();">草莓粉粉</button>
+                <button class="mini-action-btn" onclick="bakeBase('blueberry')" ontouchstart="bakeBase('blueberry'); event.preventDefault();">蓝莓梦幻</button>
             </div>
 
             <div class="section-label">2. 抹上醇香奶油</div>
             <div class="btn-flex">
-                <button class="mini-action-btn" onclick="bakeCream('peach')">💖 蜜桃粉</button>
-                <button class="mini-action-btn" onclick="bakeCream('red')">❤️ 甜心红</button>
+                <button class="mini-action-btn" onclick="bakeCream('peach')" ontouchstart="bakeCream('peach'); event.preventDefault();">💖 蜜桃粉</button>
+                <button class="mini-action-btn" onclick="bakeCream('red')" ontouchstart="bakeCream('red'); event.preventDefault();">❤️ 甜心红</button>
             </div>
 
             <div class="section-label">3. 放上生日蜡烛（点击生成，可任意拖动）</div>
             <div class="btn-flex">
-                <button class="mini-action-btn" onclick="addSticker('candle')">🕯️ 蜡烛</button>
+                <button class="mini-action-btn" onclick="addSticker('candle')" ontouchstart="addSticker('candle'); event.preventDefault();">🕯️ 蜡烛</button>
             </div>
 
-            <div class="section-label">4. 摆放可爱装饰（点击生成，可任意拖动）</div>
+            <div class="section-label">4. 摆放可爱装饰</div>
             <div class="btn-flex">
-                <button class="mini-action-btn" onclick="addSticker('strawberry')">🍓 草莓</button>
-                <button class="mini-action-btn" onclick="addSticker('sheep_sticker')">🐏 小羊</button>
-                <button class="mini-action-btn" onclick="addSticker('bunny_sticker')">🐰 小兔子</button>
-                <button class="mini-action-btn" onclick="addSticker('heart')">❤️ 爱心</button>
-                <button class="mini-action-btn" onclick="addSticker('star')">✨ 星星</button>
-                <button class="mini-action-btn" onclick="randomDecorateCake()">🎲 随机摆放</button>
+                <button class="mini-action-btn" onclick="addSticker('strawberry')" ontouchstart="addSticker('strawberry'); event.preventDefault();">🍓 草莓</button>
+                <button class="mini-action-btn" onclick="addSticker('sheep_sticker')" ontouchstart="addSticker('sheep_sticker'); event.preventDefault();">🐏 小羊</button>
+                <button class="mini-action-btn" onclick="addSticker('bunny_sticker')" ontouchstart="addSticker('bunny_sticker'); event.preventDefault();">🐰 小兔子</button>
+                <button class="mini-action-btn" onclick="addSticker('heart')" ontouchstart="addSticker('heart'); event.preventDefault();">❤️ 爱心</button>
+                <button class="mini-action-btn" onclick="addSticker('star')" ontouchstart="addSticker('star'); event.preventDefault();">✨ 星星</button>
+                <button class="mini-action-btn" onclick="randomDecorateCake()" ontouchstart="randomDecorateCake(); event.preventDefault();">🎲 随机摆放</button>
             </div>
 
-            <button class="action-submit-btn" id="finish-bake-btn" style="display:none;" onclick="goToLive()">✨ 制作完成，前往庆生现场！ ➔</button>
+            <button class="action-submit-btn" id="finish-bake-btn" style="display:none;" onclick="goToLive()" ontouchstart="goToLive(); event.preventDefault();">✨ 制作完成，前往庆生现场！ ➔</button>
         </div>
     </div>
 
     <div class="game-screen" id="scr-live">
         <h1 class="title"><i class="fa-solid fa-gift"></i> 给博文发个生日祝福吧！</h1>
-        
         <div class="live-arena" id="live-field">
             <div class="live-center-img" id="live-center-img"></div>
         </div>
-
         <div class="glass-card">
             <div style="font-weight:bold; color:var(--primary-pink); font-size:0.95rem; min-height:44px; margin-bottom:10px;" id="dialogue">
-                🎂 创意大蛋糕已送达！点击上方的博文NPC解锁感谢寄语吧！
+                🎂 创意大蛋糕已送达！快写下给博文的专属生日寄语吧！
             </div>
-
             <div class="input-bar">
                 <input type="text" id="danmaku-input" placeholder="输入送给杨博文的0601生日寄语..." maxlength="22">
-                <button class="circle-btn" onclick="sendDanmaku()"><i class="fa-solid fa-paper-plane"></i></button>
+                <button class="circle-btn" onclick="sendDanmaku()" ontouchstart="sendDanmaku(); event.preventDefault();"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
         </div>
     </div>
@@ -434,72 +314,38 @@
 
 <script>
     const assetConfig = {
-        // 卡点关卡 BGM
-        bgm: "audio/rhythm-bgm.mp3", [cite: 127]
-
-        // 1. 初始形象选择区图片
-        sheep: {
-            idle: "image/sheep.png", [cite: 127]
-            left: "image/sheep-left.png", [cite: 127]
-            up: "image/sheep-up.png", [cite: 127]
-            right: "image/sheep-right.png", [cite: 128]
-            video: "video/sheep-pass.mp4" [cite: 128]
-        },
-        bunny: {
-            idle: "image/rabbit.png", [cite: 128]
-            left: "image/rabbit-left.png", [cite: 128]
-            up: "image/rabbit-up.png", [cite: 128]
-            right: "image/rabbit-right.png", [cite: 129]
-            video: "video/rabbit-pass.mp4" [cite: 129]
-        },
-        cakeBaseColors: {
-            original: "#f6c77a", [cite: 129]
-            strawberry: "#ffb8c8", [cite: 129]
-            blueberry: "#a6d8ff" [cite: 129]
-        },
-        creamColors: {
-            peach: "#ffd6e7", [cite: 129]
-            red: "#ff8fa3" [cite: 130]
-        },
-        stickers: {
-            candle: "image/cake-candle.png", [cite: 130]
-            strawberry: "image/decor-strawberry.png", [cite: 130]
-            sheep_sticker: "image/decor-sheep.png", [cite: 130]
-            bunny_sticker: "image/decor-rabbit.png", [cite: 130]
-            heart: "image/decor-heart.png", [cite: 131]
-            star: "image/decor-star.png" [cite: 131]
-        },
-        finalScene: {
-            centerImage: "image/live-center.png" [cite: 131]
-        }
+        bgm: "audio/rhythm-bgm.mp3",
+        sheep: { idle: "image/sheep.png", left: "image/sheep-left.png", up: "image/sheep-up.png", right: "image/sheep-right.png", video: "video/sheep-pass.mp4" },
+        bunny: { idle: "image/rabbit.png", left: "image/rabbit-left.png", up: "image/rabbit-up.png", right: "image/rabbit-right.png", video: "video/rabbit-pass.mp4" },
+        cakeBaseColors: { original: "#f6c77a", strawberry: "#ffb8c8", blueberry: "#a6d8ff" },
+        creamColors: { peach: "#ffd6e7", red: "#ff8fa3" },
+        stickers: { candle: "image/cake-candle.png", strawberry: "image/decor-strawberry.png", sheep_sticker: "image/decor-sheep.png", bunny_sticker: "image/decor-rabbit.png", heart: "image/decor-heart.png", star: "image/decor-star.png" },
+        finalScene: { centerImage: "image/live-center.png" }
     };
 
-    let myRole = ''; let selectedSongId = null; [cite: 132]
-    let combo = 0; [cite: 132]
-    let totalNotesHit = 0; [cite: 132]
-    let targetGoalCount = 10;   [cite: 133]
-    let liveNotes = []; [cite: 133]
-    let bOk = false, cOk = false; [cite: 134]
-    let noteSpawnerTimer = null; [cite: 134]
-    const praiseWords = ["太棒了", "非常好", "卡点王赞赞", "精准踩点", "节奏天才", "好会卡", "高光瞬间", "稳稳命中", "全场尖叫", "漂亮！"]; [cite: 135]
+    // 🌟【机制优化】：系统默认帮用户预选好“软萌小羊”和“简易歌曲”，确保哪怕玩家手机硬件暂时出了卡死状况，点开始也可以直接畅玩！
+    let myRole = 'sheep'; 
+    let selectedSongId = 0; 
+    let combo = 0; let totalNotesHit = 0; let targetGoalCount = 10;
+    let liveNotes = []; let bOk = false, cOk = false; let noteSpawnerTimer = null;
+    const praiseWords = ["太棒了", "非常好", "卡点王赞赞", "精准踩点", "节奏天才", "好会卡", "高光瞬间", "稳稳命中", "全场尖叫", "漂亮！"];
 
-    // ==================== 🛠️ 手机端音频核心生命周期管理 ====================
-    
-    // 全局唯一的音频对象源控制，页面加载完只赋值一次，绝不重复覆写 src
+    // ==================== 🛠️ 手机端生命周期加载初始化 ====================
     window.addEventListener('DOMContentLoaded', () => {
         const bgm = document.getElementById('rhythm-bgm');
-        if (bgm) {
-            bgm.src = assetConfig.bgm;
-            bgm.load(); 
-        }
+        if (bgm) { bgm.src = assetConfig.bgm; bgm.load(); }
         
-        // 兼容微信内置浏览器的底层自动解锁
+        // 手机页面加载成功后，自动为小羊和简易模式附加选中样式高亮
+        try {
+            document.getElementById('role-sheep').classList.add('selected');
+            document.getElementById('song-0').classList.add('selected');
+            document.getElementById('stage-player').style.backgroundImage = `url('${assetConfig.sheep.idle}')`;
+        } catch(e) { console.log(e); }
+
+        // 微信内置浏览器底层自动解锁机制
         document.addEventListener("WeixinJSBridgeReady", function () {
             if (bgm) {
-                bgm.play().then(() => {
-                    bgm.pause();
-                    bgm.currentTime = 0;
-                }).catch(e => console.log("微信环境静默自动解锁失败"));
+                bgm.play().then(() => { bgm.pause(); bgm.currentTime = 0; }).catch(e => console.log("微信自动解锁失败"));
             }
         }, false);
     });
@@ -508,13 +354,10 @@
         const bgm = document.getElementById('rhythm-bgm');
         if(!bgm) return;
         bgm.volume = 0.75;
-        bgm.play().catch((err) => {
-            console.log('手机安全策略拦截了音频自动播放，等待用户点击大按钮触发');
-        });
+        bgm.play().catch((err) => { console.log('自动播放受拦截，等待后续手动触发'); });
     }
 
     function startGame() {
-        // 玩家明确点击“Challenge Start”，在此合法时机激活音频
         playRhythmBgm();
         fadeTo('scr-game');
     }
@@ -523,271 +366,231 @@
         const bgm = document.getElementById('rhythm-bgm');
         if(!bgm) return;
         bgm.volume = 0.8;
-        // 移除重置逻辑，直接恢复播放状态
-        bgm.play().then(() => {
-            console.log("手机端手动强制激活音乐成功");
-        }).catch(err => {
-            console.log(err);
-            alert("播放失败！请确认您的手机【未开启侧边静音开关】且【媒体音量已调大】，然后再试一次。");
-        });
+        bgm.play().then(() => { console.log("强制激活音乐成功"); })
+        .catch(err => { alert("播放失败！请确认您的手机【未开启侧边静音实体开关】且【媒体音量已调大】。"); });
     }
 
     function stopRhythmBgm() {
         const bgm = document.getElementById('rhythm-bgm');
         if(!bgm) return;
-        try {
-            bgm.pause();
-            bgm.currentTime = 0;
-        } catch(e) { console.log(e); }
+        try { bgm.pause(); bgm.currentTime = 0; } catch(e){}
     }
 
-    // ==================== 游戏常规核心逻辑 ====================
-
     function fadeTo(id) {
-        document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active')); [cite: 136]
-        document.getElementById(id).classList.add('active'); [cite: 136]
-        if(id === 'scr-game') { [cite: 137]
-            runAudioAndBeatmapEngine(); [cite: 137]
-        }
+        document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if(id === 'scr-game') { runAudioAndBeatmapEngine(); }
     }
 
     function chooseRole(type) {
-        myRole = type; [cite: 149]
-        document.querySelectorAll('#scr-setup .grid-card').forEach(c => c.classList.remove('selected')); [cite: 150]
-        document.getElementById(`role-${type}`).classList.add('selected'); [cite: 150]
-        checkSetupStatus(); [cite: 150]
+        myRole = type;
+        document.querySelectorAll('#scr-setup .grid-card').forEach(c => c.classList.remove('selected'));
+        const el = document.getElementById(`role-${type}`);
+        if(el) el.classList.add('selected');
+        
+        const sp = document.getElementById('stage-player');
+        if(sp) sp.style.backgroundImage = `url('${assetConfig[myRole].idle}')`;
     }
 
     function chooseSong(id) {
-        selectedSongId = id; [cite: 150]
-        targetGoalCount = (id === 0) ? 10 : 20; [cite: 151]
-        document.querySelectorAll('.song-option').forEach(o => o.classList.remove('selected')); [cite: 151]
-        document.getElementById(`song-${id}`).classList.add('selected'); [cite: 152]
-        checkSetupStatus(); [cite: 152]
-    }
-
-    function checkSetupStatus() {
-        if(myRole && selectedSongId !== null) { [cite: 152]
-            const btn = document.getElementById('start-btn'); [cite: 152]
-            btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; [cite: 153]
-            document.getElementById('stage-player').style.backgroundImage = `url('${assetConfig[myRole].idle}')`; [cite: 153]
-        }
+        selectedSongId = id;
+        targetGoalCount = (id === 0) ? 10 : 20;
+        document.querySelectorAll('.song-option').forEach(o => o.classList.remove('selected'));
+        const el = document.getElementById(`song-${id}`);
+        if(el) el.classList.add('selected');
     }
 
     function runAudioAndBeatmapEngine() {
-        const stage = document.getElementById('game-stage'); [cite: 154]
-        combo = 0; totalNotesHit = 0; liveNotes = []; [cite: 155]
-        if(noteSpawnerTimer) clearInterval(noteSpawnerTimer); [cite: 155]
-        document.getElementById('ui-progress').innerText = `通关进度: 0 / ${targetGoalCount}`; [cite: 156]
-        document.getElementById('ui-combo').style.display = 'none'; [cite: 156]
-        document.getElementById('ui-feedback').innerText = ''; [cite: 156]
+        const stage = document.getElementById('game-stage');
+        combo = 0; totalNotesHit = 0; liveNotes = [];
+        if(noteSpawnerTimer) clearInterval(noteSpawnerTimer);
+        document.getElementById('ui-progress').innerText = `通关进度: 0 / ${targetGoalCount}`;
+        document.getElementById('ui-combo').style.display = 'none';
+        document.getElementById('ui-feedback').innerText = '';
 
-        const spawnInterval = selectedSongId === 0 ? 1200 : 700; [cite: 157]
+        const spawnInterval = selectedSongId === 0 ? 1200 : 700;
         
         noteSpawnerTimer = setInterval(() => {
-            if(!document.getElementById('scr-game').classList.contains('active')) { [cite: 158]
-                clearInterval(noteSpawnerTimer); [cite: 158]
-                return; [cite: 158]
+            if(!document.getElementById('scr-game').classList.contains('active')) {
+                clearInterval(noteSpawnerTimer); return;
             }
-            
-            let trackIndex = Math.floor(Math.random() * 3); [cite: 159]
-            const note = document.createElement('div'); [cite: 159]
-            note.className = 'rhythm-note'; [cite: 159]
-            const arrows = ['←', '↑', '→']; [cite: 159]
-            note.innerText = arrows[trackIndex]; [cite: 159]
-            note.style.left = `calc(${trackIndex * 33.33}% + (33.33% - 46px)/2)`; [cite: 160]
-            note.style.top = '0px'; [cite: 160]
-
-            stage.appendChild(note); [cite: 160]
-            liveNotes.push({ element: note, track: trackIndex, top: 0 }); [cite: 160]
+            let trackIndex = Math.floor(Math.random() * 3);
+            const note = document.createElement('div');
+            note.className = 'rhythm-note';
+            const arrows = ['←', '↑', '→'];
+            note.innerText = arrows[trackIndex];
+            note.style.left = `calc(${trackIndex * 33.33}% + (33.33% - 46px)/2)`;
+            note.style.top = '0px';
+            stage.appendChild(note);
+            liveNotes.push({ element: note, track: trackIndex, top: 0 });
         }, spawnInterval);
 
         function renderAnimationLoop() {
-            if(!document.getElementById('scr-game').classList.contains('active')) return; [cite: 161]
-            for(let i = liveNotes.length - 1; i >= 0; i--) { [cite: 162]
-                let n = liveNotes[i]; [cite: 162]
-                n.top += (selectedSongId === 0 ? 4.5 : 6.0); [cite: 163]
-                n.element.style.top = `${n.top}px`; [cite: 163]
-                if(n.top > 380) { [cite: 164]
-                    n.element.remove(); [cite: 164]
-                    liveNotes.splice(i, 1); [cite: 165]
-                    combo = 0; [cite: 165]
-                    document.getElementById('ui-combo').style.display = 'none'; [cite: 165]
+            if(!document.getElementById('scr-game').classList.contains('active')) return;
+            for(let i = liveNotes.length - 1; i >= 0; i--) {
+                let n = liveNotes[i];
+                n.top += (selectedSongId === 0 ? 4.5 : 6.0);
+                n.element.style.top = `${n.top}px`;
+                if(n.top > 380) {
+                    n.element.remove(); liveNotes.splice(i, 1); combo = 0;
+                    document.getElementById('ui-combo').style.display = 'none';
                 }
             }
-            requestAnimationFrame(renderAnimationLoop); [cite: 165]
+            requestAnimationFrame(renderAnimationLoop);
         }
-        requestAnimationFrame(renderAnimationLoop); [cite: 166]
+        requestAnimationFrame(renderAnimationLoop);
     }
 
     function hitTrack(trackIndex) {
-        const ring = document.getElementById(`ring-${trackIndex}`); [cite: 173]
-        ring.classList.add('hitted'); setTimeout(() => ring.classList.remove('hitted'), 100); [cite: 174]
+        const ring = document.getElementById(`ring-${trackIndex}`);
+        ring.classList.add('hitted'); setTimeout(() => ring.classList.remove('hitted'), 100);
 
-        let isHit = false; [cite: 174]
-        for(let i = 0; i < liveNotes.length; i++) { [cite: 174]
-            let n = liveNotes[i]; [cite: 174]
-            if(n.track === trackIndex && n.top >= 260 && n.top <= 365) { [cite: 175]
-                isHit = true; [cite: 175]
-                n.element.remove(); liveNotes.splice(i, 1); break; [cite: 176]
+        let isHit = false;
+        for(let i = 0; i < liveNotes.length; i++) {
+            let n = liveNotes[i];
+            if(n.track === trackIndex && n.top >= 260 && n.top <= 365) {
+                isHit = true; n.element.remove(); liveNotes.splice(i, 1); break;
             }
         }
 
-        const dancer = document.getElementById('stage-player'); [cite: 176]
-        const feedback = document.getElementById('ui-feedback'); [cite: 177]
-        const flash = document.getElementById('bg-flash'); [cite: 177]
+        const dancer = document.getElementById('stage-player');
+        const feedback = document.getElementById('ui-feedback');
+        const flash = document.getElementById('bg-flash');
 
         if(isHit) {
-            combo++; [cite: 177]
-            totalNotesHit++; [cite: 178]
+            combo++; totalNotesHit++;
+            document.getElementById('ui-progress').innerText = `通关进度: ${totalNotesHit} / ${targetGoalCount}`;
             
-            document.getElementById('ui-progress').innerText = `通关进度: ${totalNotesHit} / ${targetGoalCount}`; [cite: 178]
-            let actionImg = assetConfig[myRole].idle; [cite: 179]
-            if(trackIndex === 0) actionImg = assetConfig[myRole].left; [cite: 180]
-            if(trackIndex === 1) actionImg = assetConfig[myRole].up; [cite: 180]
-            if(trackIndex === 2) actionImg = assetConfig[myRole].right; [cite: 180]
-            dancer.style.backgroundImage = `url('${actionImg}')`; [cite: 181]
-            dancer.style.transform = 'translateX(-50%) scale(1.15)'; [cite: 181]
+            let actionImg = assetConfig[myRole].idle;
+            if(trackIndex === 0) actionImg = assetConfig[myRole].left;
+            if(trackIndex === 1) actionImg = assetConfig[myRole].up;
+            if(trackIndex === 2) actionImg = assetConfig[myRole].right;
+            dancer.style.backgroundImage = `url('${actionImg}')`;
+            dancer.style.transform = 'translateX(-50%) scale(1.15)';
             
             setTimeout(() => {
-                dancer.style.backgroundImage = `url('${assetConfig[myRole].idle}')`; [cite: 181]
-                dancer.style.transform = 'translateX(-50%) scale(1)'; [cite: 181]
+                dancer.style.backgroundImage = `url('${assetConfig[myRole].idle}')`;
+                dancer.style.transform = 'translateX(-50%) scale(1)';
             }, 200);
 
-            feedback.innerText = praiseWords[Math.floor(Math.random() * praiseWords.length)]; [cite: 182]
-            feedback.style.color = '#55efc4'; [cite: 182]
-            showRandomBeatWord(); [cite: 182]
+            feedback.innerText = praiseWords[Math.floor(Math.random() * praiseWords.length)];
+            feedback.style.color = '#55efc4';
+            showRandomBeatWord();
 
-            flash.style.background = 'rgba(255, 118, 118, 0.15)'; [cite: 182]
-            setTimeout(() => flash.style.background = 'transparent', 80); [cite: 183]
+            flash.style.background = 'rgba(255, 118, 118, 0.15)';
+            setTimeout(() => flash.style.background = 'transparent', 80);
 
-            const ui = document.getElementById('ui-combo'); [cite: 183]
-            ui.innerText = `${combo} COMBO`; ui.style.display = 'block'; [cite: 183]
+            const ui = document.getElementById('ui-combo');
+            ui.innerText = `${combo} COMBO`; ui.style.display = 'block';
 
-            // 🌟【时序修复核心】：一旦判定通关，必须在当前点击帧内立即停止 BGM 并挂载视频，绝不走 setTimeout
             if(totalNotesHit >= targetGoalCount) {
-                clearInterval(noteSpawnerTimer); [cite: 184]
-                stopRhythmBgm(); // 立即掐断音频流，防止死锁 
-                
-                const videoPlayer = document.getElementById('reward-player'); [cite: 185]
-                videoPlayer.src = assetConfig[myRole].video; [cite: 185]
-                videoPlayer.load(); [cite: 185]
-                
-                fadeTo('scr-video-reward'); [cite: 186]
+                clearInterval(noteSpawnerTimer); stopRhythmBgm();
+                const videoPlayer = document.getElementById('reward-player');
+                videoPlayer.src = assetConfig[myRole].video; videoPlayer.load();
+                fadeTo('scr-video-reward');
             }
         } else {
-            feedback.innerText = "MISS 💨"; [cite: 187]
-            feedback.style.color = '#ff7675'; [cite: 188]
-            combo = 0; document.getElementById('ui-combo').style.display = 'none'; [cite: 188]
+            feedback.innerText = "MISS 💨"; feedback.style.color = '#ff7675';
+            combo = 0; document.getElementById('ui-combo').style.display = 'none';
         }
     }
 
     function showRandomBeatWord() {
-        const stage = document.getElementById('game-stage'); [cite: 167]
-        const pop = document.createElement('div'); [cite: 168]
-        pop.className = 'beat-word-pop'; [cite: 168]
-        pop.innerText = praiseWords[Math.floor(Math.random() * praiseWords.length)]; [cite: 168]
-        const xList = [18, 38, 60]; [cite: 169]
-        pop.style.left = `${xList[Math.floor(Math.random() * xList.length)]}%`; [cite: 170]
-        pop.style.top = `${Math.random() * 60 + 35}px`; [cite: 170]
-        stage.appendChild(pop); [cite: 170]
-        setTimeout(() => pop.remove(), 760); [cite: 170]
+        const stage = document.getElementById('game-stage');
+        const pop = document.createElement('div');
+        pop.className = 'beat-word-pop';
+        pop.innerText = praiseWords[Math.floor(Math.random() * praiseWords.length)];
+        const xList = [18, 38, 60];
+        pop.style.left = `${xList[Math.floor(Math.random() * xList.length)]}%`;
+        pop.style.top = `${Math.random() * 60 + 35}px`;
+        stage.appendChild(pop);
+        setTimeout(() => pop.remove(), 760);
     }
 
-    // ==================== 蛋糕 DIY 与弹幕逻辑区 ====================
     function bakeBase(baseKey) {
-        const b = document.getElementById('model-base'); [cite: 188]
-        b.style.display = 'block'; [cite: 189]
-        b.style.backgroundImage = 'none'; [cite: 189]
-        b.style.backgroundColor = assetConfig.cakeBaseColors[baseKey] || assetConfig.cakeBaseColors.strawberry; [cite: 189]
-        bOk = true; evalBake(); [cite: 189]
+        const b = document.getElementById('model-base');
+        b.style.display = 'block'; b.style.backgroundImage = 'none';
+        b.style.backgroundColor = assetConfig.cakeBaseColors[baseKey] || assetConfig.cakeBaseColors.strawberry;
+        bOk = true; evalBake();
     }
     function bakeCream(creamKey) {
-        if(!bOk) { alert('请先选择蛋糕底胚！'); return; } [cite: 190]
-        const cream = document.getElementById('model-cream'); [cite: 191]
-        cream.style.display = 'block'; [cite: 191]
-        cream.style.backgroundImage = 'none'; [cite: 191]
-        cream.style.backgroundColor = assetConfig.creamColors[creamKey] || assetConfig.creamColors.peach; [cite: 192]
-        cOk = true; evalBake(); [cite: 192]
+        if(!bOk) { alert('请先选择蛋糕底胚！'); return; }
+        const cream = document.getElementById('model-cream');
+        cream.style.display = 'block'; cream.style.backgroundImage = 'none';
+        cream.style.backgroundColor = assetConfig.creamColors[creamKey] || assetConfig.creamColors.peach;
+        cOk = true; evalBake();
     }
     function addSticker(stickerKey) {
-        const canvas = document.getElementById('cake-canvas'); [cite: 192]
-        if(!canvas) return; [cite: 193]
-        if(!bOk) bakeBase('strawberry'); [cite: 193]
-        if(!cOk) bakeCream('peach'); [cite: 194]
+        const canvas = document.getElementById('cake-canvas');
+        if(!canvas) return;
+        if(!bOk) bakeBase('strawberry');
+        if(!cOk) bakeCream('peach');
 
-        const st = document.createElement('div'); [cite: 194]
-        st.className = 'draggable-sticker'; [cite: 194]
-        st.style.backgroundImage = `url('${assetConfig.stickers[stickerKey]}')`; [cite: 194]
-
-        const pos = getRandomCakePosition(canvas); [cite: 194]
-        st.style.left = `${pos.x}px`; st.style.top = `${pos.y}px`; [cite: 194, 195]
-
-        canvas.appendChild(st); [cite: 195]
-        bindStickerPhysics(st, canvas); [cite: 195]
-        evalBake(); [cite: 195]
+        const st = document.createElement('div');
+        st.className = 'draggable-sticker';
+        st.style.backgroundImage = `url('${assetConfig.stickers[stickerKey]}')`;
+        const pos = getRandomCakePosition(canvas);
+        st.style.left = `${pos.x}px`; st.style.top = `${pos.y}px`;
+        canvas.appendChild(st); bindStickerPhysics(st, canvas); evalBake();
     }
+
     function getRandomCakePosition(canvas) {
-        const cakeLeft = canvas.clientWidth / 2 - 95; [cite: 195]
-        const x = cakeLeft + Math.random() * 160; [cite: 196]
-        const y = 105 + Math.random() * 85; [cite: 196]
-        return { x: Math.max(10, Math.min(x, canvas.clientWidth - 66)), y: Math.max(10, Math.min(y, canvas.clientHeight - 66)) }; [cite: 197]
+        const cakeLeft = canvas.clientWidth / 2 - 95;
+        const x = cakeLeft + Math.random() * 160;
+        const y = 105 + Math.random() * 85;
+        return { x: Math.max(10, Math.min(x, canvas.clientWidth - 66)), y: Math.max(10, Math.min(y, canvas.clientHeight - 66)) };
     }
+
     function randomDecorateCake() {
-        if(!cOk) { alert('请先抹好奶油再随机摆放装饰哦！'); return; } [cite: 198]
-        const keys = ['strawberry', 'sheep_sticker', 'bunny_sticker', 'heart', 'star', 'candle']; [cite: 199]
-        const count = Math.floor(Math.random() * 5) + 5; [cite: 200]
-        for(let i = 0; i < count; i++) { [cite: 200]
-            addSticker(keys[Math.floor(Math.random() * keys.length)]); [cite: 200]
-        }
-        evalBake(); [cite: 201]
+        if(!cOk) { alert('请先抹好奶油再随机摆放装饰哦！'); return; }
+        const keys = ['strawberry', 'sheep_sticker', 'bunny_sticker', 'heart', 'star', 'candle'];
+        const count = Math.floor(Math.random() * 5) + 5;
+        for(let i = 0; i < count; i++) { addSticker(keys[Math.floor(Math.random() * keys.length)]); }
+        evalBake();
     }
+
     function bindStickerPhysics(item, boundary) {
-        let active = false; [cite: 201]
-        let sx, sy, ox, oy; [cite: 202]
-        const s = (e) => { [cite: 202]
-            active = true; [cite: 202]
-            const p = e.touches ? e.touches[0] : e; [cite: 203]
-            sx = p.clientX; sy = p.clientY; ox = item.offsetLeft; oy = item.offsetTop; [cite: 203]
+        let active = false; let sx, sy, ox, oy;
+        const s = (e) => {
+            active = true; const p = e.touches ? e.touches[0] : e;
+            sx = p.clientX; sy = p.clientY; ox = item.offsetLeft; oy = item.offsetTop;
         };
-        const m = (e) => { [cite: 204]
-            if(!active) return; [cite: 204]
-            if(e.cancelable) e.preventDefault(); [cite: 205]
-            const p = e.touches ? e.touches[0] : e; [cite: 205]
-            let nx = ox + (p.clientX - sx); [cite: 205]
-            let ny = oy + (p.clientY - sy); [cite: 206]
-            const mx = boundary.clientWidth - item.clientWidth; [cite: 206]
-            const my = boundary.clientHeight - item.clientHeight; [cite: 206]
-            if(nx < 0) nx = 0; if(nx > mx) nx = mx; if(ny < 0) ny = 0; [cite: 207]
-            if(ny > my) ny = my; [cite: 208]
-            item.style.left = `${nx}px`; item.style.top = `${ny}px`; [cite: 208]
+        const m = (e) => {
+            if(!active) return; if(e.cancelable) e.preventDefault();
+            const p = e.touches ? e.touches[0] : e;
+            let nx = ox + (p.clientX - sx); let ny = oy + (p.clientY - sy);
+            const mx = boundary.clientWidth - item.clientWidth; const my = boundary.clientHeight - item.clientHeight;
+            if(nx < 0) nx = 0; if(nx > mx) nx = mx; if(ny < 0) ny = 0; if(ny > my) ny = my;
+            item.style.left = `${nx}px`; item.style.top = `${ny}px`;
         };
-        const en = () => active = false; [cite: 209]
-        item.addEventListener('mousedown', s); window.addEventListener('mousemove', m); window.addEventListener('mouseup', en); [cite: 209]
-        item.addEventListener('touchstart', s, {passive:false}); window.addEventListener('touchmove', m, {passive:false}); [cite: 209]
-        window.addEventListener('touchend', en); [cite: 210]
+        const en = () => active = false;
+        item.addEventListener('mousedown', s); window.addEventListener('mousemove', m); window.addEventListener('mouseup', en);
+        item.addEventListener('touchstart', s, {passive:false}); window.addEventListener('touchmove', m, {passive:false});
+        window.addEventListener('touchend', en);
     }
-    function evalBake() { if(bOk && cOk) document.getElementById('finish-bake-btn').style.display = 'block'; } [cite: 210]
+
+    function evalBake() { if(bOk && cOk) document.getElementById('finish-bake-btn').style.display = 'block'; }
+    
     function goToLive() {
-        document.getElementById('reward-player').pause(); [cite: 211]
-        const liveImg = document.getElementById('live-center-img'); [cite: 211]
-        liveImg.style.backgroundImage = `url('${assetConfig.finalScene.centerImage}')`; [cite: 212]
-        fadeTo('scr-live'); [cite: 212]
+        document.getElementById('reward-player').pause();
+        const liveImg = document.getElementById('live-center-img');
+        liveImg.style.backgroundImage = `url('${assetConfig.finalScene.centerImage}')`;
+        fadeTo('scr-live');
     }
+
     function sendDanmaku() {
-        const ipt = document.getElementById('danmaku-input'); [cite: 215]
-        const txt = ipt.value.trim(); if(!txt) return; [cite: 216]
-        const f = document.getElementById('live-field'); [cite: 216]
-        const dam = document.createElement('div'); [cite: 216]
-        dam.className = 'danmaku-lane'; dam.innerText = txt; [cite: 216]
-        const cols = ['#ffffff', '#ffeb3b', '#ff7675', '#fd79a8', '#55efc4', '#a29bfe']; [cite: 217]
-        dam.style.color = cols[Math.floor(Math.random() * cols.length)]; [cite: 217]
-        dam.style.top = `${Math.random() * 110 + 15}px`; [cite: 218]
-        f.appendChild(dam); ipt.value = ''; [cite: 218]
-        setTimeout(() => dam.remove(), 6000); [cite: 218]
+        const ipt = document.getElementById('danmaku-input');
+        const txt = ipt.value.trim(); if(!txt) return;
+        const f = document.getElementById('live-field');
+        const dam = document.createElement('div');
+        dam.className = 'danmaku-lane'; dam.innerText = txt;
+        const cols = ['#ffffff', '#ffeb3b', '#ff7675', '#fd79a8', '#55efc4', '#a29bfe'];
+        dam.style.color = cols[Math.floor(Math.random() * cols.length)];
+        dam.style.top = `${Math.random() * 110 + 15}px`;
+        f.appendChild(dam); ipt.value = '';
+        setTimeout(() => dam.remove(), 6000);
     }
     
-    // 默认键盘监听事件 [cite: 166]
     window.addEventListener('keydown', (e) => {
         if(!document.getElementById('scr-game').classList.contains('active')) return;
         if(e.key === 'ArrowLeft') hitTrack(0);
@@ -795,6 +598,7 @@
         if(e.key === 'ArrowRight') hitTrack(2);
     });
 </script>
-
+</body>
+</html>
 </body>
 </html>
