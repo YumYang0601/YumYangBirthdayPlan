@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>杨博文 0601 Rhythm Challenge</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght=700&family=ZCOOL+KuaiLe&display=swap');
+
+        :root {
+            --bg-gradient: linear-gradient(135deg, #ffeaa7 0%, #ffb4b4 100%);
+            --panel-bg: rgba(255, 255, 255, 0.9);
+            --primary-pink: #ff7675;
+            --text-dark: #2d3436;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; font-family: 'Noto Serif SC', sans-serif;
+            background: var(--bg-gradient); user-select: none;
+        }
+
+        .game-screen {
+            position: absolute; width: 100%; height: 100%; top: 0; left: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none;
+            transform: scale(0.95);
+            transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+            padding: 15px;
+        }
+        .game-screen.active { opacity: 1; pointer-events: auto; transform: scale(1); }
+
+        .glass-card {
+            width: 100%; max-width: 440px; background: var(--panel-bg);
+            border-radius: 24px; padding: 22px;
+            box-shadow: 0 15px 35px rgba(255, 118, 118, 0.15);
+            text-align: center; border: 3px solid #ffffff;
+        }
+
+        h1.title {
+            font-family: 'ZCOOL KuaiLe', sans-serif; font-size: 1.8rem;
+            color: var(--primary-pink); margin: 0 0 5px 0; text-shadow: 2px 2px 0 white;
+        }
+        .subtitle { font-size: 0.85rem; color: #636e72; margin-bottom: 12px; line-height: 1.4; }
+
+        .select-row {
+            font-weight: bold; color: var(--text-dark); text-align: left;
+            margin: 10px 0 5px 0; font-size: 0.95rem; border-left: 4px solid var(--primary-pink); padding-left: 6px;
+        }
+        .item-grid { display: flex; gap: 12px; justify-content: center; margin-bottom: 12px; }
+        .grid-card {
+            background: white; border: 2.5px solid #dfe6e9; border-radius: 16px;
+            padding: 10px; flex: 1; cursor: pointer; transition: all 0.2s; text-align: center;
+        }
+        .grid-card.selected { border-color: var(--primary-pink); background: #fff5f5; transform: scale(1.02); }
+        
+        .role-img-wrap {
+            width: 70px; height: 75px; margin: 0 auto 6px auto;
+            background-size: contain; background-repeat: no-repeat; background-position: center;
+        }
+
+        .song-list { display: flex; flex-direction: column; gap: 8px; width: 100%; margin-bottom: 15px; }
+        .song-option {
+            background: white; border: 2.5px solid #dfe6e9; border-radius: 14px;
+            padding: 12px 15px; cursor: pointer; text-align: left; display: flex;
+            align-items: center; justify-content: space-between; transition: all 0.2s;
+        }
+        .song-option.selected { border-color: var(--primary-pink); background: #fff5f5; }
+        .song-info { display: flex; flex-direction: column; }
+        .song-title { font-weight: bold; font-size: 0.95rem; color: var(--text-dark); }
+        .song-meta { font-size: 0.75rem; color: #888; margin-top: 2px; }
+        .song-badge { font-size: 0.8rem; font-weight: bold; padding: 3px 8px; border-radius: 20px; background: #e3faf2; color: #20c997; }
+
+        /* ================= 核心节奏大舞台 ================= */
+        .rhythm-stage {
+            position: relative; width: 100%; max-width: 360px; height: 380px;
+            background: #ffd6e7; border: 5px solid #ffffff;
+            border-radius: 32px; overflow: hidden; margin-bottom: 12px;
+        }
+        .flash-layer {
+            position: absolute; width: 100%; height: 100%; top: 0; left: 0;
+            background: transparent; pointer-events: none; z-index: 1; transition: background 0.08s;
+        }
+        .track {
+            position: absolute; top: 0; width: 33.33%; height: 100%;
+            border-right: 1px dashed rgba(255,255,255,0.12);
+        }
+        .track-0 { left: 0; } .track-1 { left: 33.33%; } .track-2 { left: 66.66%; border-right: none; }
+
+        .dancer-avatar {
+            position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+            width: 90px; height: 100px; z-index: 10; transition: all 0.08s;
+            background-size: contain; background-repeat: no-repeat; background-position: center;
+        }
+        
+        .judge-zone {
+            position: absolute; bottom: 12px; width: 100%; height: 60px;
+            display: flex; justify-content: space-around; padding: 0 10px; z-index: 5;
+        }
+        .judge-ring {
+            width: 52px; height: 52px; border: 3.5px solid #fff; border-radius: 50%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: white; font-weight: bold; font-size: 0.75rem; background: rgba(255,255,255,0.08);
+        }
+        .judge-ring.hitted { background: var(--primary-pink); transform: scale(0.92); }
+
+        .rhythm-note {
+            position: absolute; width: 46px; height: 46px; background: #ff7675;
+            border-radius: 50%; border: 2.5px solid white; display: flex;
+            align-items: center; justify-content: center; color: white;
+            font-weight: bold; font-size: 1.2rem; z-index: 4;
+            box-shadow: 0 3px 8px rgba(255,118,118,0.3);
+        }
+
+        /* 顶部通关计数器核心UI */
+        .target-counter {
+            position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.6);
+            color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem;
+            font-weight: bold; z-index: 30; border: 1px solid rgba(255,255,255,0.3);
+        }
+        .combo-text {
+            position: absolute; top: 50px; left: 50%; transform: translateX(-50%);
+            color: #fdcb6e; font-family: 'ZCOOL KuaiLe', sans-serif; font-size: 2rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5); z-index: 20; pointer-events: none;
+        }
+        .float-feedback {
+            position: absolute; top: 140px; width: 100%; text-align: center;
+            font-weight: bold; font-size: 1.4rem; text-shadow: 0 2px 5px rgba(0,0,0,0.7); z-index: 20;
+        }
+
+        .beat-word-pop {
+            position: absolute;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.92);
+            color: var(--primary-pink);
+            font-family: 'ZCOOL KuaiLe', sans-serif;
+            font-size: 1.05rem;
+            font-weight: bold;
+            z-index: 25;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+            animation: beatPop 0.75s ease-out forwards;
+        }
+        @keyframes beatPop {
+            0% { opacity: 0; transform: scale(0.6) translateY(8px); }
+            20% { opacity: 1; transform: scale(1.12) translateY(0); }
+            100% { opacity: 0; transform: scale(1) translateY(-24px); }
+        }
+
+        .pad-row { display: flex; gap: 10px; width: 100%; max-width: 360px; margin-bottom: 8px; }
+        .pad-btn {
+            flex: 1; background: white; border: 2px solid var(--primary-pink);
+            padding: 10px; border-radius: 14px; font-weight: bold; color: var(--primary-pink); cursor: pointer;
+        }
+
+        /* ================= 通关奖励视频投放区 ================= */
+        .video-box-container {
+            width: 100%; max-width: 360px; height: 210px; background: #000;
+            border-radius: 20px; overflow: hidden; border: 4px solid white;
+            margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        .video-box-container video { width: 100%; height: 100%; object-fit: cover; }
+
+        /* ================= 自由烘焙定制区 ================= */
+        .cake-box {
+             position: relative; width: 100%; max-width: 480px; height: 450px;
+            background: #fff6f6; border: 5px dashed var(--primary-pink); border-radius: 32px; overflow: hidden; margin-bottom: 12px;
+        }
+        .plate {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            width: 340px; height: 18px; background: #e0e0e0; border-radius: 50%; z-index: 1;
+        }
+        .cake-model-body {
+            position: absolute; bottom: 42px; left: 50%; transform: translateX(-50%);
+            width: 300px; height: 155px; z-index: 2; display: none;
+            border-radius: 26px 26px 14px 14px;
+            box-shadow: inset 0 -8px 0 rgba(0,0,0,0.06), 0 8px 14px rgba(0,0,0,0.08);
+            border: 3px solid rgba(255,255,255,0.85);
+        }
+        .cake-model-body::after {
+            content: ""; position: absolute; left: 0; right: 0; top: 45px; height: 10px;
+            background: rgba(255,255,255,0.45); border-radius: 999px;
+        }
+        .cream-top-layer {
+            position: absolute; left: 50%; top: -18px; transform: translateX(-50%);
+            width: 310px; height: 65px; display: none; z-index: 3;
+            border-radius: 50% 50% 38% 38%;
+            border: 3px solid rgba(255,255,255,0.9);
+            box-shadow: 0 6px 0 rgba(255,255,255,0.45), inset 0 -5px 0 rgba(0,0,0,0.04);
+        }
+        .cream-top-layer::after {
+            content: ""; position: absolute; left: 16px; right: 16px; bottom: -16px; height: 24px;
+            background: inherit; border-radius: 0 0 18px 18px;
+            clip-path: polygon(0 0, 12% 100%, 26% 15%, 40% 100%, 56% 15%, 72% 100%, 88% 10%, 100% 80%, 100% 0);
+        }
+        
+        .draggable-sticker {
+            position: absolute; width: 58px; height: 58px; z-index: 999; cursor: grab; touch-action: none;
+            background-size: contain; background-repeat: no-repeat; background-position: center;
+            background-color: transparent !important; border: none !important;
+            border-radius: 0 !important; box-shadow: none !important;
+        }
+        .live-center-img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            z-index: 18;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            pointer-events: none;
+        }
+
+        .section-label {
+            font-size: 0.9rem; font-weight: bold; color: var(--text-dark); text-align: left;
+            margin: 8px 0 5px 0; border-left: 4px solid var(--primary-pink); padding-left: 6px;
+        }
+        .btn-flex { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+        .mini-action-btn {
+            flex: 1; min-width: 80px; background: white; border: 2px solid var(--primary-pink);
+            color: var(--primary-pink); padding: 7px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 0.8rem;
+        }
+
+        /* ================= 最终章Live与弹幕 ================= */
+        .live-arena {
+            position: relative; width: 360px; height: 360px;
+            background: linear-gradient(to bottom, #1e272e 0%, #2c3e50 100%);
+            border-radius: 28px; overflow: hidden; border: 4px solid white; margin-bottom: 12px;
+        }
+        .npc-star {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 80px; height: 90px; cursor: pointer; z-index: 20; transition: all 0.25s;
+            background-size: contain; background-repeat: no-repeat; background-position: center;
+        }
+        .danmaku-lane {
+            position: absolute; white-space: nowrap; font-weight: bold; font-size: 1.05rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8); animation: scrollLeft 6s linear forwards; pointer-events: none;
+        }
+        @keyframes scrollLeft { from { left: 100%; } to { left: -120%; } }
+
+        .input-bar {
+            display: flex; background: white; padding: 4px; border-radius: 30px; border: 2px solid var(--primary-pink);
+        }
+        .input-bar input { flex: 1; border: none; outline: none; padding: 0 12px; font-size: 0.85rem; }
+        .circle-btn {
+            width: 36px; height: 36px; background: var(--primary-pink); color: white;
+            border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+
+        .action-submit-btn {
+            width: 100%; background: var(--primary-pink); color: white; border: none;
+            padding: 12px; font-size: 1.05rem; border-radius: 14px; font-weight: bold;
+            cursor: pointer; margin-top: 5px; box-shadow: 0 5px 12px rgba(255,118,118,0.25);
+        }
+    </style>
+</head>
+<body>
+
+<audio id="rhythm-bgm"
+       src="audio/rhythm-bgm.mp3"
+       preload="auto"
+       loop
+       playsinline
+       controls
+       style="display:none;">
+</audio>
+
+<div class="page-viewport">
+
+    <div class="game-screen active" id="scr-setup">
+        <div class="glass-card">
+            <h1 class="title">✨ 0601 Rhythm Challenge ✨</h1>
+            <div class="subtitle">欢迎来到专属排练室，请定制你的金曲舞台配置：</div>
+
+            <div class="select-row">1. 请选择博文专属形象</div>
+            <div class="item-grid">
+                <div class="grid-card" id="role-sheep" onclick="chooseRole('sheep')">
+                    <div class="role-img-wrap" style="background-image: url('image/sheep.png');"></div>
+                    <div class="card-name">软萌小羊</div>
+                </div>
+                <div class="grid-card" id="role-bunny" onclick="chooseRole('bunny')">
+                    <div class="role-img-wrap" style="background-image: url('image/rabbit.png');"></div>
+                    <div class="card-name">元气小兔</div>
+                </div>
+            </div>
+
+            <div class="select-row">2. 选择你想挑战的难度等级</div>
+            <div class="song-list">
+                <div class="song-option" id="song-0" onclick="chooseSong(0)">
+                    <div class="song-info">
+                        <span class="song-title">🎵 基础版 </span>
+                        <span class="song-meta">左右交替律动 · 需【精准成功踩点 10 次】通关</span>
+                    </div>
+                    <span class="song-badge">EASY</span>
+                </div>
+                <div class="song-option" id="song-1" onclick="chooseSong(1)">
+                    <div class="song-info">
+                        <span class="song-title">🔥 进阶版 </span>
+                        <span class="song-meta">疾速全轨道混击 · 需【精准成功踩点 20 次】通关</span>
+                    </div>
+                    <span class="song-badge" style="background:#fff5f5; color:#ff6b6b;">HARD</span>
+                </div>
+            </div>
+
+            <button
+            class="action-submit-btn"
+            id="start-btn"
+            onclick="startGame()">
+            Challenge Start ➔
+            </button>
+        </div>
+    </div>
+
+    <div class="game-screen" id="scr-game">
+        <h1 class="title"><i class="fa-solid fa-compact-disc fa-spin"></i> 正在播放音乐...</h1>
+        
+        <button
+        class="action-submit-btn"
+        style="max-width:260px;margin-bottom:10px;"
+        onclick="forcePlayBgm()">
+        🎵 点我开启音乐
+    </button>
+        
+        <div class="subtitle">键盘← ↑ →方向键或敲击屏幕下方大键，左右上随机出现，卡点词也会随机弹出，BGM 使用 audio/rhythm-bgm.mp3！</div>
+
+        <div class="rhythm-stage" id="game-stage">
+            <div class="target-counter" id="ui-progress">通关进度: 0 / 10</div>
+            
+            <div class="flash-layer" id="bg-flash"></div>
+            <div class="combo-text" id="ui-combo" style="display:none;">0 COMBO</div>
+            <div class="float-feedback" id="ui-feedback"></div>
+
+            <div class="track track-0"></div>
+            <div class="track track-1"></div>
+            <div class="track track-2"></div>
+
+            <div class="dancer-avatar" id="stage-player"></div>
+
+            <div class="judge-zone">
+                <div class="judge-ring" id="ring-0">←<br>左轨</div>
+                <div class="judge-ring" id="ring-1">↑<br>中轨</div>
+                <div class="judge-ring" id="ring-2">→<br>右轨</div>
+            </div>
+        </div>
+
+        <div class="pad-row">
+            <button class="pad-btn" onclick="hitTrack(0)"> LEFT ← </button>
+            <button class="pad-btn" onclick="hitTrack(1)"> JUMP ↑ </button>
+            <button class="pad-btn" onclick="hitTrack(2)"> RIGHT → </button>
+        </div>
+    </div>
+
+    <div class="game-screen" id="scr-video-reward">
+        <h1 class="title"><i class="fa-solid fa-trophy"></i> 完美通关！</h1>
+        <div class="subtitle">恭喜解锁专属通关舞台！</div>
+        
+        <div class="video-box-container">
+            <video id="reward-player" controls playsinline></video>
+        </div>
+
+        <button class="action-submit-btn" style="max-width:360px;" onclick="fadeTo('scr-bake')">收下谢礼，前往做蛋糕区 ➔</button>
+    </div>
+
+    <div class="game-screen" id="scr-bake">
+        <h1 class="title"><i class="fa-solid fa-cake-candles"></i> 关卡 2：定制美味蛋糕</h1>
+        <div class="subtitle">☆˶>𖥦<˶★</div>
+
+        <div class="cake-box" id="cake-canvas">
+            <div class="plate"></div>
+            <div class="cake-model-body" id="model-base">
+                <div class="cream-top-layer" id="model-cream"></div>
+            </div>
+        </div>
+
+        <div class="glass-card" style="padding:15px 20px;">
+            <div class="section-label">1. 定制底胚口味</div>
+            <div class="btn-flex">
+                <button class="mini-action-btn" onclick="bakeBase('original')">原味戚风</button>
+                <button class="mini-action-btn" onclick="bakeBase('strawberry')">草莓粉粉</button>
+                <button class="mini-action-btn" onclick="bakeBase('blueberry')">蓝莓梦幻</button>
+            </div>
+
+            <div class="section-label">2. 抹上醇香奶油</div>
+            <div class="btn-flex">
+                <button class="mini-action-btn" onclick="bakeCream('peach')">💖 蜜桃粉</button>
+                <button class="mini-action-btn" onclick="bakeCream('red')">❤️ 甜心红</button>
+            </div>
+
+            <div class="section-label">3. 放上生日蜡烛（点击生成，可任意拖动）</div>
+            <div class="btn-flex">
+                <button class="mini-action-btn" onclick="addSticker('candle')">🕯️ 蜡烛</button>
+            </div>
+
+            <div class="section-label">4. 摆放可爱装饰（点击生成，可任意拖动）</div>
+            <div class="btn-flex">
+                <button class="mini-action-btn" onclick="addSticker('strawberry')">🍓 草莓</button>
+                <button class="mini-action-btn" onclick="addSticker('sheep_sticker')">🐏 小羊</button>
+                <button class="mini-action-btn" onclick="addSticker('bunny_sticker')">🐰 小兔子</button>
+                <button class="mini-action-btn" onclick="addSticker('heart')">❤️ 爱心</button>
+                <button class="mini-action-btn" onclick="addSticker('star')">✨ 星星</button>
+                <button class="mini-action-btn" onclick="randomDecorateCake()">🎲 随机摆放</button>
+            </div>
+
+            <button class="action-submit-btn" id="finish-bake-btn" style="display:none;" onclick="goToLive()">✨ 制作完成，前往庆生现场！ ➔</button>
+        </div>
+    </div>
+
+    <div class="game-screen" id="scr-live">
+        <h1 class="title"><i class="fa-solid fa-gift"></i> 给博文发个生日祝福吧！</h1>
+        
+        <div class="live-arena" id="live-field">
+            <div class="live-center-img" id="live-center-img"></div>
+        </div>
+
+        <div class="glass-card">
+            <div style="font-weight:bold; color:var(--primary-pink); font-size:0.95rem; min-height:44px; margin-bottom:10px;" id="dialogue">
+                🎂 创意大蛋糕已送达！点击上方的博文NPC解锁感谢寄语吧！
+            </div>
+
+            <div class="input-bar">
+                <input type="text" id="danmaku-input" placeholder="输入送给杨博文的0601生日寄语..." maxlength="22">
+                <button class="circle-btn" onclick="sendDanmaku()"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const assetConfig = {
+        // 卡点关卡 BGM：把你的音乐放进 audio 文件夹，命名为 rhythm-bgm.mp3
+        bgm: "audio/rhythm-bgm.mp3",
+
+        // 1. 初始形象选择区图片：后期把图片放进 image 文件夹即可
+        sheep: {
+            idle: "image/sheep.png",
+            left: "image/sheep-left.png",
+            up: "image/sheep-up.png",
+            right: "image/sheep-right.png",
+            video: "video/sheep-pass.mp4"
+        },
+        bunny: {
+            idle: "image/rabbit.png",
+            left: "image/rabbit-left.png",
+            up: "image/rabbit-up.png",
+            right: "image/rabbit-right.png",
+            video: "video/rabbit-pass.mp4"
+        },
+        // 4. 蛋糕底胚和奶油由代码自动生成，不需要上传图片
+        cakeBaseColors: {
+            original: "#f6c77a",
+            strawberry: "#ffb8c8",
+            blueberry: "#a6d8ff"
+        },
+        creamColors: {
+            peach: "#ffd6e7",
+            red: "#ff8fa3"
+        },
+        // 只有装饰和蜡烛需要你后期上传透明底图片
+        stickers: {
+            candle: "image/cake-candle.png",
+            strawberry: "image/decor-strawberry.png",
+            sheep_sticker: "image/decor-sheep.png",
+            bunny_sticker: "image/decor-rabbit.png",
+            heart: "image/decor-heart.png",
+            star: "image/decor-star.png"
+        },
+        // 6. 结局中间弹幕舞台图片
+        finalScene: {
+            centerImage: "image/live-center.png"
+        }
+    };
+
+    let myRole = ''; let selectedSongId = null;
+    let combo = 0; 
+    let totalNotesHit = 0;      // 🌟 核心增量：记录玩家真正点击成功的次数
+    let targetGoalCount = 10;   // 🌟 核心设定：基础版10次，Hard版20次
+    let liveNotes = []; let bOk = false, cOk = false;
+    let noteSpawnerTimer = null; // 动态音符发生器定时器
+    const praiseWords = ["太棒了", "非常好", "卡点王赞赞", "精准踩点", "节奏天才", "好会卡", "高光瞬间", "稳稳命中", "全场尖叫", "漂亮！"];
+
+    function fadeTo(id) {
+        document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+
+        if(id === 'scr-game') {
+            runAudioAndBeatmapEngine();
+        } else {
+            stopRhythmBgm();
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const bgm = document.getElementById('rhythm-bgm');
+        if (bgm) {
+            bgm.src = assetConfig.bgm;
+            bgm.load(); 
+        }
+        
+        document.addEventListener("WeixinJSBridgeReady", function () {
+            if (bgm) {
+                bgm.play().then(() => {
+                    // 如果在微信里成功自动触发了，先暂停，等玩家点“开始游戏”再播
+                    bgm.pause();
+                    bgm.currentTime = 0;
+                }).catch(e => console.log("微信自动解锁失败"));
+            }
+        }, false);
+    });
+
+    function playRhythmBgm() {
+        const bgm = document.getElementById('rhythm-bgm');
+        if(!bgm) return;
+        bgm.volume = 0.75;
+        bgm.play().catch((err) => {
+            console.log('BGM 播放失败:', err);
+        });
+    }
+
+    function startGame() {
+        playRhythmBgm(); // 点击开始游戏时直接调用播放
+        fadeTo('scr-game');
+    }
+    
+    function forcePlayBgm() {
+        const bgm = document.getElementById('rhythm-bgm');
+        if(!bgm) return;
+
+        bgm.volume = 0.8;
+        bgm.play().then(() => {
+            console.log("音频强制播放成功");
+        }).catch(err => {
+            console.log(err);
+            alert("播放失败！请确认手机没有开启【侧边静音开关】且【媒体音量已调大】，然后重试。");
+        });
+    }
+
+    function stopRhythmBgm() {
+        const bgm = document.getElementById('rhythm-bgm');
+        if(!bgm) return;
+        bgm.pause();
+        bgm.currentTime = 0;
+    }
+
+    function chooseRole(type) {
+        myRole = type;
+        document.querySelectorAll('#scr-setup .grid-card').forEach(c => c.classList.remove('selected'));
+        document.getElementById(`role-${type}`).classList.add('selected');
+        checkSetupStatus();
+    }
+
+    function chooseSong(id) {
+        selectedSongId = id;
+        targetGoalCount = (id === 0) ? 10 : 20; // 🌟 核心点：判断目标值
+        document.querySelectorAll('.song-option').forEach(o => o.classList.remove('selected'));
+        document.getElementById(`song-${id}`).classList.add('selected');
+        checkSetupStatus();
+    }
+
+    function checkSetupStatus() {
+        if(myRole && selectedSongId !== null) {
+            const btn = document.getElementById('start-btn');
+            btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
+            document.getElementById('stage-player').style.backgroundImage = `url('${assetConfig[myRole].idle}')`;
+            document.getElementById('live-npc').style.backgroundImage = `url('${assetConfig[myRole].idle}')`;
+        }
+    }
+
+    // ================= 核心重构：无限生成机制 + 命中计数拦截通关 =================
+    function runAudioAndBeatmapEngine() {
+        const stage = document.getElementById('game-stage');
+        
+        // 初始化重置所有状态
+        combo = 0; totalNotesHit = 0; liveNotes = [];
+        if(noteSpawnerTimer) clearInterval(noteSpawnerTimer);
+        
+        document.getElementById('ui-progress').innerText = `通关进度: 0 / ${targetGoalCount}`;
+        document.getElementById('ui-combo').style.display = 'none';
+        document.getElementById('ui-feedback').innerText = '';
+
+        let loopIdx = 0;
+
+        // 🌟 采用动态循环喷薄音符机制：只要没点击凑满10次/20次，音符就会高频交替掉落
+        const spawnInterval = selectedSongId === 0 ? 1200 : 700; // Hard版掉落频率更快
+        
+        noteSpawnerTimer = setInterval(() => {
+            if(!document.getElementById('scr-game').classList.contains('active')) {
+                clearInterval(noteSpawnerTimer);
+                return;
+            }
+            
+            // 左、上、右三条轨道随机出现，避免连续太死板
+            let trackIndex = Math.floor(Math.random() * 3);
+            loopIdx++;
+
+            const note = document.createElement('div');
+            note.className = 'rhythm-note';
+            const arrows = ['←', '↑', '→'];
+            note.innerText = arrows[trackIndex];
+            note.style.left = `calc(${trackIndex * 33.33}% + (33.33% - 46px)/2)`;
+            note.style.top = '0px';
+
+            stage.appendChild(note);
+            liveNotes.push({ element: note, track: trackIndex, top: 0 });
+
+        }, spawnInterval);
+
+        // 画面帧渲染环
+        function renderAnimationLoop() {
+            if(!document.getElementById('scr-game').classList.contains('active')) return;
+            for(let i = liveNotes.length - 1; i >= 0; i--) {
+                let n = liveNotes[i];
+                n.top += (selectedSongId === 0 ? 4.5 : 6.0); // Hard版不仅次数多，下落速度还更快！
+                n.element.style.top = `${n.top}px`;
+                
+                // 漏点惩罚
+                if(n.top > 380) {
+                    n.element.remove();
+                    liveNotes.splice(i, 1);
+                    combo = 0;
+                    document.getElementById('ui-combo').style.display = 'none';
+                }
+            }
+            requestAnimationFrame(renderAnimationLoop);
+        }
+        requestAnimationFrame(renderAnimationLoop);
+
+        // 绑定键盘
+        window.addEventListener('keydown', (e) => {
+            if(e.key === 'ArrowLeft') hitTrack(0);
+            if(e.key === 'ArrowUp') hitTrack(1);
+            if(e.key === 'ArrowRight') hitTrack(2);
+        });
+    }
+
+
+    function showRandomBeatWord() {
+        const stage = document.getElementById('game-stage');
+        const pop = document.createElement('div');
+        pop.className = 'beat-word-pop';
+        pop.innerText = praiseWords[Math.floor(Math.random() * praiseWords.length)];
+
+        // 随机出现在左上 / 中上 / 右上区域
+        const xList = [18, 38, 60];
+        pop.style.left = `${xList[Math.floor(Math.random() * xList.length)]}%`;
+        pop.style.top = `${Math.random() * 60 + 35}px`;
+        stage.appendChild(pop);
+        setTimeout(() => pop.remove(), 760);
+    }
+
+    function playSynthTone(ctx, freq, duration) {
+        try {
+            let osc = ctx.createOscillator(); let gain = ctx.createGain();
+            osc.type = 'sine'; osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.start(); osc.stop(ctx.currentTime + duration);
+        } catch(e){}
+    }
+
+    function hitTrack(trackIndex) {
+        const ring = document.getElementById(`ring-${trackIndex}`);
+        ring.classList.add('hitted'); setTimeout(() => ring.classList.remove('hitted'), 100);
+
+        let isHit = false;
+        for(let i = 0; i < liveNotes.length; i++) {
+            let n = liveNotes[i];
+            if(n.track === trackIndex && n.top >= 260 && n.top <= 365) {
+                isHit = true; n.element.remove(); liveNotes.splice(i, 1); break;
+            }
+        }
+
+        const dancer = document.getElementById('stage-player');
+        const feedback = document.getElementById('ui-feedback');
+        const flash = document.getElementById('bg-flash');
+
+        if(isHit) {
+            combo++; 
+            totalNotesHit++; // 🌟 核心：只有点击成功才加分计数！
+            
+            // 更新看板
+            document.getElementById('ui-progress').innerText = `通关进度: ${totalNotesHit} / ${targetGoalCount}`;
+
+            // 动作精准触发
+            let actionImg = assetConfig[myRole].idle;
+            if(trackIndex === 0) actionImg = assetConfig[myRole].left;
+            if(trackIndex === 1) actionImg = assetConfig[myRole].up;
+            if(trackIndex === 2) actionImg = assetConfig[myRole].right;
+            
+            dancer.style.backgroundImage = `url('${actionImg}')`;
+            dancer.style.transform = 'translateX(-50%) scale(1.15)';
+            
+            setTimeout(() => {
+                dancer.style.backgroundImage = `url('${assetConfig[myRole].idle}')`;
+                dancer.style.transform = 'translateX(-50%) scale(1)';
+            }, 200);
+
+            feedback.innerText = praiseWords[Math.floor(Math.random() * praiseWords.length)];
+            feedback.style.color = '#55efc4';
+            showRandomBeatWord();
+
+            flash.style.background = 'rgba(255, 118, 118, 0.15)';
+            setTimeout(() => flash.style.background = 'transparent', 80);
+
+            const ui = document.getElementById('ui-combo');
+            ui.innerText = `${combo} COMBO`; ui.style.display = 'block';
+
+            // 🌟 核心拦截检查：一旦点满了 10次 或 20次，瞬间停止生成并切入视频！
+            if(totalNotesHit >= targetGoalCount) {
+                clearInterval(noteSpawnerTimer); // 关掉生成器
+                setTimeout(() => {
+                    const videoPlayer = document.getElementById('reward-player');
+                    videoPlayer.src = assetConfig[myRole].video;
+                    videoPlayer.load();
+                    stopRhythmBgm();
+                    fadeTo('scr-video-reward');
+                }, 500);
+            }
+        } else {
+            feedback.innerText = "MISS 💨"; feedback.style.color = '#ff7675';
+            combo = 0; document.getElementById('ui-combo').style.display = 'none';
+        }
+    }
+
+    // 做蛋糕及拖拽模块：底胚和奶油自动生成；装饰/蜡烛用你上传的透明底图片
+    function bakeBase(baseKey) {
+        const b = document.getElementById('model-base');
+        b.style.display = 'block';
+        b.style.backgroundImage = 'none';
+        b.style.backgroundColor = assetConfig.cakeBaseColors[baseKey] || assetConfig.cakeBaseColors.strawberry;
+        bOk = true; evalBake();
+    }
+    function bakeCream(creamKey) {
+        if(!bOk) { alert('请先选择蛋糕底胚！'); return; }
+        const cream = document.getElementById('model-cream');
+        cream.style.display = 'block';
+        cream.style.backgroundImage = 'none';
+        cream.style.backgroundColor = assetConfig.creamColors[creamKey] || assetConfig.creamColors.peach;
+        cOk = true; evalBake();
+    }
+    function addSticker(stickerKey) {
+        const canvas = document.getElementById('cake-canvas');
+        if(!canvas) { alert('找不到蛋糕画布 cake-canvas'); return; }
+
+        // 防呆：玩家忘记先点底胚/奶油时，先自动显示默认蛋糕
+        if(!bOk) bakeBase('strawberry');
+        if(!cOk) bakeCream('peach');
+
+        const st = document.createElement('div');
+        st.className = 'draggable-sticker';
+        st.style.backgroundImage = `url('${assetConfig.stickers[stickerKey]}')`;
+
+        const pos = getRandomCakePosition(canvas);
+        st.style.left = `${pos.x}px`;
+        st.style.top = `${pos.y}px`;
+
+        canvas.appendChild(st);
+        bindStickerPhysics(st, canvas);
+        evalBake();
+    }
+
+    function getRandomCakePosition(canvas) {
+        // 固定落在蛋糕上半区，保证一眼能看到
+        const cakeLeft = canvas.clientWidth / 2 - 95;
+        const x = cakeLeft + Math.random() * 160;
+        const y = 105 + Math.random() * 85;
+        return { x: Math.max(10, Math.min(x, canvas.clientWidth - 66)), y: Math.max(10, Math.min(y, canvas.clientHeight - 66)) };
+    }
+
+    function randomDecorateCake() {
+        if(!cOk) { alert('请先抹好奶油再随机摆放装饰哦！'); return; }
+        const keys = ['strawberry', 'sheep_sticker', 'bunny_sticker', 'heart', 'star', 'candle'];
+        const count = Math.floor(Math.random() * 5) + 5;
+        for(let i = 0; i < count; i++) {
+            addSticker(keys[Math.floor(Math.random() * keys.length)]);
+        }
+        evalBake();
+    }
+
+    function bindStickerPhysics(item, boundary) {
+        let active = false; let sx, sy, ox, oy;
+        const s = (e) => {
+            active = true; const p = e.touches ? e.touches[0] : e;
+            sx = p.clientX; sy = p.clientY; ox = item.offsetLeft; oy = item.offsetTop;
+        };
+        const m = (e) => {
+            if(!active) return; if(e.cancelable) e.preventDefault();
+            const p = e.touches ? e.touches[0] : e;
+            let nx = ox + (p.clientX - sx); let ny = oy + (p.clientY - sy);
+            const mx = boundary.clientWidth - item.clientWidth;
+            const my = boundary.clientHeight - item.clientHeight;
+            if(nx < 0) nx = 0; if(nx > mx) nx = mx; if(ny < 0) ny = 0; if(ny > my) ny = my;
+            item.style.left = `${nx}px`; item.style.top = `${ny}px`;
+        };
+        const en = () => active = false;
+        item.addEventListener('mousedown', s); window.addEventListener('mousemove', m); window.addEventListener('mouseup', en);
+        item.addEventListener('touchstart', s, {passive:false}); window.addEventListener('touchmove', m, {passive:false}); window.addEventListener('touchend', en);
+    }
+
+    function evalBake() { if(bOk && cOk) document.getElementById('finish-bake-btn').style.display = 'block'; }
+
+    function goToLive() {
+        document.getElementById('reward-player').pause();
+        const liveImg = document.getElementById('live-center-img');
+        liveImg.style.backgroundImage = `url('${assetConfig.finalScene.centerImage}')`;
+        fadeTo('scr-live');
+    }
+
+    function triggerNpcDance() {
+        const npc = document.getElementById('live-npc');
+        document.getElementById('dialogue').innerText = `🎵 杨博文：“极限卡点太帅了！感谢你为我搭建的专属生日舞台！”`;
+
+        document.getElementById('model-base').style.transform = 'scale(0.35) translate(-160px, 80px)';
+        document.querySelectorAll('.draggable-sticker').forEach(s => {
+            s.style.pointerEvents = 'none'; s.style.transform = 'scale(0.5) translate(-110px, 60px)';
+        });
+
+        let cnt = 0;
+        const t = setInterval(() => {
+            cnt++;
+            npc.style.transform = `translateX(-50%) translateY(${cnt % 2 === 0 ? '-12px' : '0px'}) rotate(${cnt % 3 === 0 ? '10deg' : '-10deg'})`;
+            if(cnt > 20) { clearInterval(t); npc.style.transform = 'translateX(-50%)'; }
+        }, 140);
+    }
+
+    function sendDanmaku() {
+        const ipt = document.getElementById('danmaku-input');
+        const txt = ipt.value.trim(); if(!txt) return;
+
+        const f = document.getElementById('live-field');
+        const dam = document.createElement('div');
+        dam.className = 'danmaku-lane'; dam.innerText = txt;
+
+        const cols = ['#ffffff', '#ffeb3b', '#ff7675', '#fd79a8', '#55efc4', '#a29bfe'];
+        dam.style.color = cols[Math.floor(Math.random() * cols.length)];
+        dam.style.top = `${Math.random() * 110 + 15}px`;
+
+        f.appendChild(dam); ipt.value = '';
+        setTimeout(() => dam.remove(), 6000);
+    }
+
+
+    // ✅ 双保险：不用只依赖 HTML onclick，按钮点击也强制绑定一次
+</script>
+
+</body>
+</html>
